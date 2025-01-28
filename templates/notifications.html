@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConnectHub | Notifications</title>
+    <link rel="icon" type="image/x-icon" href="/static/assets/logowhite.png">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/dropdown.css">
+    <link rel="stylesheet" href="/static/css/notifications.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/v4-shims.min.js"></script>
+
+</head>
+
+<body>
+    <header>
+        <a href="/home?tab=posts&filter=all" class="logo-container">
+            <img src="/static/assets/logo.png" alt="ConnectHub Logo">
+            <span>Connect</span><span>Hub</span>
+        </a>
+        <div class="user-actions">
+            {{if .HasSession}}
+            <form action="/newpost" method="GET">
+                <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
+                <button type="submit" class="register">
+                    <i class="fa-regular fa-square-plus"></i> New post
+                </button>
+            </form>
+            <!-- 
+            <div class="dropdown">
+                <a class="dropdown-toggle dropbtn" href="#"><i class="fa-regular fa-bell"></i></a>
+                <div class="dropdown-content">
+                    <h2 style="text-align: center;">Notifications</h2>
+                    {{range .Notifications}}
+                    <div class="notification-item">
+                        <form method="GET" action="/post">
+                            <input type="hidden" name="id" value="{{.PostID}}">
+                            <button type="submit" class="dropdown-item">
+                                <img src="{{.UserImage}}" alt="User Image" class="notification-user-image">
+                                <div class="notification-user-name">
+                                    <span>@{{.UserName}}</span><span> Has {{.Message}}</span>
+                                </div>
+                            </button>
+                        </form>
+                    </div>
+                    {{else}}
+                    <p>No notifications yet</p>
+                    {{end}}
+                    <form action="/notifications" method="GET">
+                        <button type="submit" class="dropdown-item show-more">Show more</button>
+                    </form>
+                </div>
+            </div> -->
+            <div class="dropdown">
+                <img src="{{if .Avatar}}{{.Avatar}}{{else}}/static/assets/default-avatar.png{{end}}" alt="Avatar"
+                    class="avatar dropbtn">
+                <div class="dropdown-content">
+                    <form action="/home" method="GET">
+                        <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
+                        <button class="profile-button">
+                            {{if or (eq .RoleName "Moderator") (eq .RoleName "Admin")}}
+                            <span class="role"><i class="fa-solid fa-user-tie"></i> {{.RoleName}}</span>
+                            {{end}}
+                            <img src="{{if .Avatar}}{{.Avatar}}{{else}}/static/assets/default-avatar.png{{end}}"
+                                alt="Avatar" class="profile-image">
+                            <div class="profile-info">
+                                <span class="username">@{{.UserName}}</span>
+                                <span class="stats"><i class="fa-solid fa-medal"></i> {{.TotalLikes}}
+                                    [{{.TotalPosts}}]</span>
+                            </div>
+                        </button>
+                    </form><!-- 
+                    <form action="/myprofile" method="GET">
+                        <button type="submit">
+                            <i class="fas fa-user"></i> Your Profile
+                        </button>
+                    </form>
+                    <form action="/settings" method="GET">
+                        <button type="submit">
+                            <i class="fas fa-cog"></i> Account settings
+                        </button>
+                    </form> -->
+                    <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+            {{else}}
+            <div class="user-actions">
+                <a href="/signup"><button class="register"><i class="fas fa-user-plus"></i> Register</button></a>
+                <a href="/"><button class="login"><i class="fas fa-sign-in-alt"></i> Login</button></a>
+            </div>
+            {{end}}
+        </div>
+    </header>
+    <div class="feed-container">
+        <div class="sidebar-rights">
+            <img src="/static/assets/logo.png" alt="Connect Hub Logo">
+            <div class="rights">
+                <p>© 2024 | All rights reserved.</p>
+            </div>
+        </div>
+        <aside class="sidebar">
+            <nav>
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                    <input type="text" placeholder="Type to search..." class="search-bar">
+                </div>
+                <h3 class="menu-heading">Menu</h3>
+                <ul>
+                    <li>
+                        <form action="/home" method="GET">
+                            <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
+                            <input type="hidden" name="tab" value="posts">
+                            <input type="hidden" name="filter" value="all">
+                            <button type="submit" class="{{if eq .SelectedTab "posts"}}selected{{end}}">
+                                <i class="fas fa-newspaper"></i> Posts
+                            </button>
+                        </form>
+                    </li>
+                    <li>
+                        <form action="/home" method="GET">
+                            <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
+                            <input type="hidden" name="tab" value="tags">
+                            <input type="hidden" name="filter" value="all">
+                            <button type="submit" class="{{if eq .SelectedTab "tags"}}selected{{end}}">
+                                <i class="fas fa-tags"></i> Tags
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+                {{if .HasSession}}
+                <h3 class="menu-heading">Activity centre</h3>
+                <ul>
+                    <li>
+                        <form action="/home" method="GET">
+                            <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
+                            <input type="hidden" name="tab" value="your+posts">
+                            <input type="hidden" name="filter" value="newest">
+                            <button type="submit" class="{{if eq .SelectedTab "your+posts"}}selected{{end}}">
+                                <i class="fa-solid fa-grip-lines"></i> Your posts
+                            </button>
+                        </form>
+                    </li>
+<!--                     <li>
+                        <form action="/home" method="GET">
+                            <input type="hidden" name="tab" value="your+replies">
+                            <input type="hidden" name="filter" value="newest">
+                            <button type="submit" class="{{if eq .SelectedTab "your+replies"}}selected{{end}}">
+                                <i class="fa-solid fa-reply"></i> Your replies
+                            </button>
+                        </form>
+                    </li> -->
+                    <li>
+                        <form action="/home" method="GET">
+                            <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
+                            <input type="hidden" name="tab" value="your+reactions">
+                            <input type="hidden" name="filter" value="likes">
+                            <button type="submit" class="{{if eq .SelectedTab "your+reactions"}}selected{{end}}">
+                                <i class="fa-regular fa-heart"></i> Your reactions
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+                {{if or (eq .RoleID 1) (eq .RoleID 2)}}
+                <h3 class="menu-heading">Forum management</h3>
+                <ul>
+                    {{if eq .RoleID 1}}
+                    <li>
+                        <form action="/admin" method="GET">
+                            <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
+                            <input type="hidden" name="tab" value="admin">
+                            <button type="submit" class="{{if eq .SelectedTab "admin"}}selected{{end}}">
+                                <i class="fas fa-user-shield"></i> Admin Dashboard
+                            </button>
+                        </form>
+                    </li>
+                    {{else if eq .RoleID 2}}
+                    <li>
+                        <form action="/moderator" method="GET">
+                            <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
+                            <input type="hidden" name="tab" value="moderator">
+                            <button type="submit" class="{{if eq .SelectedTab "moderator"}}selected{{end}}">
+                                <i class="fas fa-user-cog"></i> Moderator Panel
+                            </button>
+                        </form>
+                    </li>
+                    {{end}}
+                </ul>
+                {{end}}
+                {{end}}
+            </nav>
+            <div class="social-icons">
+                <a href="https://instagram.com/reboot01.coding" target="_blank" class="social-link"><i
+                        class="fab fa-instagram"></i>
+                </a>
+                <a href="https://linkedin.com/school/reboot-coding-institute" target="_blank" class="social-link"><i
+                        class="fab fa-linkedin"></i>
+                </a>
+                <a href="https://reboot01.com" target="_blank" class="social-link"><i class="fa-solid fa-globe"></i>
+                </a>
+            </div>
+        </aside>
+        <main>
+            <section class="feed">
+                <div class="container">
+                    <h1>Notifications</h1>
+                    {{range .Notifications}}
+                    <div class="notification-item">
+                        <form method="GET" action="/post">
+                            <input type="hidden" name="id" value="{{.PostID}}">
+                            <button type="submit" class="dropdown-item">
+                                <img src="{{.UserImage}}" alt="User Image" class="notification-user-image">
+                                <div class="notification-user-name">
+                                    <span>@{{.UserName}}</span><span> has {{.Message}}</span>
+                                </div>
+                            </button>
+                        </form>
+                    </div>
+                    {{else}}
+                    <p>No notifications yet</p>
+                    {{end}}
+                </div>
+            </section>
+        </main>
+        <script src="/static/js/dropdown.js"></script>
+</body>
+
+</html>
