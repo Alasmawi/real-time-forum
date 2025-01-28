@@ -1,4 +1,4 @@
-## Forum
+## Real Time Forum
 
 This project is a web-based forum application that allows users to create, view, and manage posts. It includes features such as user authentication, image uploads, moderation tools, and more.
 
