@@ -2,16 +2,17 @@ package server
 
 import (
 	"database/sql"
-	UUID "forum/src/security"
+	uuid "forum/src/uuid"
 	"log"
 	"net/http"
 	"time"
+	strct "forum/structs"
 )
 
 func LoginPage(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		log.Println("Invalid URL path")
-		err := ErrorPageData{Code: "404", ErrorMsg: "PAGE NOT FOUND"}
+		err := strct.ErrorPageData{Code: "404", ErrorMsg: "PAGE NOT FOUND"}
 		errHandler(w, r, &err)
 		return
 	}
@@ -19,7 +20,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 	db, err := sql.Open("sqlite3", "./database/main.db")
 	if err != nil {
 		log.Println("Database connection failed")
-		err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 		errHandler(w, r, &err)
 		return
 	}
@@ -40,13 +41,13 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 				})
 				if err != nil {
 					log.Println("Error rendering login page:", err)
-					errData := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+					errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 					errHandler(w, r, &errData)
 				}
 				return
 			}
 			log.Println("Failed to fetch user data")
-			err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &err)
 			return
 		}
@@ -57,17 +58,17 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 			})
 			if err != nil {
 				log.Println("Error rendering login page:", err)
-				errData := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+				errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 				errHandler(w, r, &errData)
 			}
 			return
 		}
 
 		// Generate a new session token
-		sessionToken, err := UUID.GenerateToken()
+		sessionToken, err := uuid.GenerateToken()
 		if err != nil {
 			log.Println("Error generating UUID:", err)
-			errData := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &errData)
 		}
 
@@ -85,7 +86,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 		result, err := db.Exec("UPDATE session SET sessionid = ? WHERE userid = ?", stringToken, userID)
 		if err != nil {
 			log.Println("Error updating session ID in session table:", err)
-			errData := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &errData)
 			return
 		} else if rowsAffected, err := result.RowsAffected(); err == nil && rowsAffected == 0 { //only insert a new row if no record is updated (i.e., no session is found)
@@ -93,7 +94,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 				stringToken, userID, time.Now().Add(1*time.Hour))
 			if err != nil {
 				log.Println("Error creating new session:", err)
-				errData := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+				errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 				errHandler(w, r, &errData)
 				return
 			}
@@ -103,7 +104,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 		_, err = db.Exec("UPDATE user SET current_session = ? WHERE userid = ?", stringToken, userID)
 		if err != nil {
 			log.Println("Error updating session ID in user table:", err)
-			errData := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &errData)
 			return
 		}
@@ -117,7 +118,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 	err = templates.ExecuteTemplate(w, "index.html", nil)
 	if err != nil {
 		log.Println("Error rendering login page:", err)
-		errData := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+		errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 		errHandler(w, r, &errData)
 	}
 }

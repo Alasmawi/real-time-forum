@@ -1,11 +1,12 @@
 package server
 
 import (
+	strct "forum/structs"
 	"log"
 	"net/http"
 )
 
-func errHandler(w http.ResponseWriter, _ *http.Request, errData *ErrorPageData) {
+func errHandler(w http.ResponseWriter, _ *http.Request, errData *strct.ErrorPageData) {
 	err := templates.ExecuteTemplate(w, "error.html", errData)
 	if err != nil {
 		log.Println("Error rendering error page:", err)
@@ -16,7 +17,7 @@ func errHandler(w http.ResponseWriter, _ *http.Request, errData *ErrorPageData) 
 	// w.WriteHeader(errCodeInt)
 }
 
-func AutherrHandler(w http.ResponseWriter, _ *http.Request, errData *ErrorPageData) {
+func AutherrHandler(w http.ResponseWriter, _ *http.Request, errData *strct.ErrorPageData) {
 	err := templates.ExecuteTemplate(w, "error.html", errData)
 	if err != nil {
 		log.Println("Error rendering error page:", err)

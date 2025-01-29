@@ -3,7 +3,8 @@ package server
 import (
 	"database/sql"
 	"fmt"
-	"forum/database"
+	fUtils "forum/database/feature-utils"
+	strct "forum/structs"
 	"log"
 	"net/http"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 func PostPage(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/post" {
 		log.Println("Invalid URL path")
-		err := ErrorPageData{Code: "404", ErrorMsg: "PAGE NOT FOUND"}
+		err := strct.ErrorPageData{Code: "404", ErrorMsg: "PAGE NOT FOUND"}
 		errHandler(w, r, &err)
 		return
 	}
@@ -47,7 +48,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 	err = db.QueryRow("SELECT userid, Username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
 	if err != nil {
 		log.Println("Error fetching userid and username from user table:", err)
-		err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 		errHandler(w, r, &err)
 		return
 	}
@@ -59,7 +60,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var post database.Post
+	var post strct.Post
 	err = db.QueryRow(`
         SELECT post.postid, post.image, post.content, post.post_at, post.user_userid, user.Username, user.F_name, user.L_name, user.Avatar,
                (SELECT COUNT(*) FROM likes WHERE likes.post_postid = post.postid) AS Likes,
@@ -71,7 +72,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 		`, postID).Scan(&post.PostID, &post.Image, &post.Content, &post.PostAt, &post.UserUserID, &post.Username, &post.FirstName, &post.LastName, &post.Avatar, &post.Likes, &post.Dislikes, &post.Comments)
 	if err != nil {
 		log.Println("Failed to fetch posts")
-		errData := ErrorPageData{Code: "400", ErrorMsg: "BAD REQUEST"}
+		errData := strct.ErrorPageData{Code: "400", ErrorMsg: "BAD REQUEST"}
 		errHandler(w, r, &errData)
 		return
 	}
@@ -82,7 +83,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	comments, err := database.GetCommentsForPost(db, postIDInt)
+	comments, err := fUtils.GetCommentsForPost(db, postIDInt)
 	if err != nil {
 		log.Println("Error getting comments for post:", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -96,7 +97,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch categories for the post
-	categories, err := database.GetCategoriesForPost(db, post.PostID)
+	categories, err := fUtils.GetCategoriesForPost(db, post.PostID)
 	if err != nil {
 		log.Println("Error fetching categories for post:", err)
 		return
@@ -104,7 +105,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("User ID:", userID) // Log the UserID to ensure it is being retrieved
 
-	data := PageData{
+	data := strct.PageData{
 		Post:       post,
 		Comments:   comments,
 		UserID:     userID, // Ensure UserID is set

@@ -2,24 +2,25 @@ package server
 
 import (
 	"database/sql"
+	fUtil "forum/database/feature-utils"
 	"fmt"
-	"forum/database"
 	"log"
 	"net/http"
 	"time"
+	strct "forum/structs"
 )
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/home" {
 		log.Println("Invalid URL path")
-		err := ErrorPageData{Code: "404", ErrorMsg: "PAGE NOT FOUND"}
+		err := strct.ErrorPageData{Code: "404", ErrorMsg: "PAGE NOT FOUND"}
 		errHandler(w, r, &err)
 		return
 	}
 
 	if r.Method != "GET" {
 		log.Println("Method not allowed")
-		err := ErrorPageData{Code: "405", ErrorMsg: "METHOD NOT ALLOWED"}
+		err := strct.ErrorPageData{Code: "405", ErrorMsg: "METHOD NOT ALLOWED"}
 		errHandler(w, r, &err)
 		return
 	}
@@ -27,7 +28,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 	db, err := sql.Open("sqlite3", "./database/main.db")
 	if err != nil {
 		log.Println("Database connection failed:", err)
-		err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 		errHandler(w, r, &err)
 		return
 	}
@@ -57,7 +58,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else if err != nil {
 			log.Println("Error fetching userid ID from user table:", err)
-			err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &err)
 			return
 		} else {
@@ -65,171 +66,19 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	users, err := database.GetAllUsers(db)
+	users, err := fUtil.GetAllUsers(db)
 	if err != nil {
 		log.Println("Failed to fetch users:", err)
-		err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 		errHandler(w, r, &err)
 		return
 	}
 
-	categories, err := database.GetAllCategories(db)
-	if err != nil {
-		log.Println("Failed to fetch categories:", err)
-		err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-		errHandler(w, r, &err)
-		return
-	}
-
-	categoryNames := make([]string, len(categories))
-	for i, category := range categories {
-		categoryNames[i] = category.Name
-	}
-
-	var posts []database.Post
-
-	allPosts, err := database.GetAllPosts(db)
+	var posts []strct.Post
+	posts, err = fUtil.GetAllPosts(db)
 	if err != nil {
 		log.Println("Failed to fetch posts:", err)
-		err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-		errHandler(w, r, &err)
-		return
-	}
-
-	filter := r.URL.Query().Get("filter")
-	selectedTab := r.URL.Query().Get("tab")
-
-	if selectedTab == "" {
-		selectedTab = "posts"
-	}
-
-	if filter == "" {
-		if selectedTab == "your+posts" {
-			filter = "newest"
-		} else if selectedTab == "your+replies" {
-			filter = "newest"
-		} else if selectedTab == "your+reactions" {
-			filter = "likes"
-		} else {
-			filter = "all"
-		}
-	}
-
-	switch selectedTab {
-	case "posts":
-		switch filter {
-		case "all":
-			posts = allPosts
-		case "top-rated":
-			posts, err = database.GetFilteredPosts(db, filter)
-			if err != nil {
-				log.Println("Failed to fetch posts:", err)
-				err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-				errHandler(w, r, &err)
-				return
-			}
-		case "oldest":
-			posts, err = database.GetFilteredPosts(db, filter)
-			if err != nil {
-				log.Println("Failed to fetch posts:", err)
-				err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-				errHandler(w, r, &err)
-				return
-			}
-		default:
-			log.Println("Invalid filter selected", err)
-			err := ErrorPageData{Code: "400", ErrorMsg: "BAD REQUEST"}
-			errHandler(w, r, &err)
-			return
-		}
-	case "tags":
-
-		if filter == "all" {
-			posts = allPosts
-		} else if CheckFilter(filter, categoryNames) {
-			posts, err = database.GetPostsByCategory(db, filter)
-			if err != nil {
-				log.Println("Failed to fetch posts:", err)
-				err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-				errHandler(w, r, &err)
-				return
-			}
-		} else {
-			log.Println("Invalid filter selected", err)
-			err := ErrorPageData{Code: "400", ErrorMsg: "BAD REQUEST"}
-			errHandler(w, r, &err)
-			return
-		}
-
-	case "your+posts":
-
-		switch filter {
-
-		case "newest":
-			posts, err = database.GetUserPosts(db, userID, filter)
-			if err != nil {
-				log.Println("Failed to fetch posts:", err)
-				err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-				errHandler(w, r, &err)
-				return
-			}
-		case "oldest":
-			posts, err = database.GetUserPosts(db, userID, filter)
-			if err != nil {
-				log.Println("Failed to fetch posts:", err)
-				err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-				errHandler(w, r, &err)
-				return
-			}
-		default:
-			log.Println("Invalid filter selected", err)
-			err := ErrorPageData{Code: "400", ErrorMsg: "BAD REQUEST"}
-			errHandler(w, r, &err)
-			return
-		}
-
-	case "your+replies":
-
-		posts, err = database.GetUserCommentedPosts(db, userID, filter)
-		if err != nil {
-			log.Println("Failed to fetch posts:", err)
-			err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-			errHandler(w, r, &err)
-			return
-		}
-
-	case "your+reactions":
-
-		switch filter {
-
-		case "likes":
-			//
-			posts, err = database.GetUserReaction(db, userID, filter)
-			if err != nil {
-				log.Println("Failed to fetch posts:", err)
-				err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-				errHandler(w, r, &err)
-				return
-			}
-		case "dislikes":
-			//
-			posts, err = database.GetUserReaction(db, userID, filter)
-			if err != nil {
-				log.Println("Failed to fetch posts:", err)
-				err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-				errHandler(w, r, &err)
-				return
-			}
-		default:
-			log.Println("Invalid filter selected", err)
-			err := ErrorPageData{Code: "400", ErrorMsg: "BAD REQUEST"}
-			errHandler(w, r, &err)
-			return
-		}
-
-	default:
-		log.Println("Invalid tab selected", err)
-		err := ErrorPageData{Code: "400", ErrorMsg: "BAD REQUEST"}
+		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 		errHandler(w, r, &err)
 		return
 	}
@@ -240,30 +89,21 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		err = db.QueryRow("SELECT avatar, role_id FROM user WHERE userID = ?", userID).Scan(&avatar, &roleID)
 		if err == sql.ErrNoRows {
 			log.Println("No user found with the given ID:", userID)
-			err := ErrorPageData{Code: "404", ErrorMsg: "USER NOT FOUND"}
+			err := strct.ErrorPageData{Code: "404", ErrorMsg: "USER NOT FOUND"}
 			errHandler(w, r, &err)
 			return
 		} else if err != nil {
 			log.Println("Failed to fetch user data:", err)
-			err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &err)
 			return
-		}
-
-		var roleName string
-		if roleID == 1 {
-			roleName = "Admin"
-		} else if roleID == 2 {
-			roleName = "Moderator"
-		} else {
-			roleName = "User"
 		}
 
 		var totalLikes, totalPosts int
 		err = db.QueryRow("SELECT COUNT(*) FROM likes WHERE user_userID = ?", userID).Scan(&totalLikes)
 		if err != nil {
 			log.Println("Failed to fetch total likes:", err)
-			err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &err)
 			return
 		}
@@ -271,67 +111,27 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		err = db.QueryRow("SELECT COUNT(*) FROM post WHERE user_userID = ?", userID).Scan(&totalPosts)
 		if err != nil {
 			log.Println("Failed to fetch total posts:", err)
-			err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &err)
 			return
 		}
 
-		notifications, err := database.GetLastNotifications(db, userID)
-		if err != nil {
-			log.Println("Failed to fetch notifications:", err)
-			err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-			errHandler(w, r, &err)
-			return
-		}
-
-		data := PageData{
+		data := strct.PageData{
 			HasSession:     hasSession,
 			UserID:         userID,
 			UserName:       userName,
 			Avatar:         avatar.String,
-			RoleName:       roleName,
 			TotalLikes:     totalLikes,
 			TotalPosts:     totalPosts,
-			Categories:     categories,
 			Users:          users,
 			Posts:          posts,
-			SelectedTab:    selectedTab,
-			SelectedFilter: filter,
-			Notifications:  notifications,
-			RoleID:         roleID,
+			// Notifications:  notifications,
 		}
 
 		err = templates.ExecuteTemplate(w, "home.html", data)
 		if err != nil {
 			log.Println("Error rendering home page:", err)
-			err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-			errHandler(w, r, &err)
-			return
-		}
-	} else {
-		if selectedTab != "posts" && selectedTab != "tags" {
-			err = templates.ExecuteTemplate(w, "index.html", nil)
-			if err != nil {
-				log.Println("Error rendering home page:", err)
-				err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-				errHandler(w, r, &err)
-				return
-			}
-		}
-
-		data := PageData{
-			HasSession:     hasSession,
-			Categories:     categories,
-			Users:          users,
-			Posts:          posts,
-			SelectedTab:    selectedTab,
-			SelectedFilter: filter,
-		}
-
-		err = templates.ExecuteTemplate(w, "home.html", data)
-		if err != nil {
-			log.Println("Error rendering home page:", err)
-			err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &err)
 			return
 		}

@@ -3,6 +3,7 @@ package server
 import (
 	"database/sql"
 	"fmt"
+	strct "forum/structs"
 	"log"
 	"net/http"
 	"time"
@@ -13,7 +14,7 @@ func ReverseMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		db, err := sql.Open("sqlite3", "./database/main.db")
 		if err != nil {
 			log.Println("Database connection failed")
-			err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &err)
 			return
 		}
@@ -31,11 +32,11 @@ func ReverseMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE current_session = ?)", seshVal).Scan(&exists)
 			if err != nil {
 				log.Println("Error :", err)
-				err := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+				err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 				errHandler(w, r, &err)
 				return
-			} 
-			
+			}
+
 			if !exists {
 				log.Println("Inavlid Session")
 				http.SetCookie(w, &http.Cookie{
