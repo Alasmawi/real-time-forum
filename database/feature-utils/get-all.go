@@ -7,7 +7,7 @@ import (
 )
 
 func GetAllCategories(db *sql.DB) ([]strct.Category, error) {
-	rows, err := db.Query("SELECT idcategories, name, description FROM categories")
+	rows, err := db.Query("SELECT category_id, name, description FROM category")
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func GetAllCategories(db *sql.DB) ([]strct.Category, error) {
 }
 
 func GetAllUsers(db *sql.DB) ([]strct.User, error) {
-	rows, err := db.Query("SELECT userid, F_name, L_name, Username, Email, Avatar FROM user")
+	rows, err := db.Query("SELECT user_id, f_name, l_name, username, email, avatar FROM user")
 	if err != nil {
 		log.Println("Error executing query:", err)
 		return nil, err

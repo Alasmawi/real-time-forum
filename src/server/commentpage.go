@@ -36,7 +36,7 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Exec("INSERT INTO comment (content, comment_at, post_postid, user_userid) VALUES (?, ?, ?, ?)", content, time.Now(), postID, userID)
+	_, err = db.Exec("INSERT INTO comment (content, comment_at, post_id, user_id) VALUES (?, ?, ?, ?)", content, time.Now(), postID, userID)
 	if err != nil {
 		log.Println("Error inserting comment:", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)

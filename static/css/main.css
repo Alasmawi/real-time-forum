@@ -12,9 +12,10 @@ header {
     background-color: #FFFFFF;
     border-bottom: 2px solid #E5E7EB;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 15px 30px;
+    padding: clamp(1vh, 1vh, 1vh) clamp(2vw, 2vw, 2vw);
+    background-color: #FFFFFF;
+    border-bottom: 2px solid #E5E7EB;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
@@ -28,8 +29,13 @@ header {
 }
 
 .feed-container {
+   padding: 1vw;
     display: flex;
-    flex: 1;
+    /* flex: 1; */
+    flex-direction: row;
+    align-content: flex-start;
+    gap: 1vw;
+    justify-content: center;
 }
 
 .logo-container {
@@ -126,14 +132,14 @@ main {
     background-color: #FFFFFF;
     border: 1px solid #E5E7EB;
     border-radius: 8px;
-    padding: 20px;
+    /* padding: 20px; */
     width: 260px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     position: sticky;
-    margin-left: 20px;
-    top: 20px;
-    bottom: 60px;
-    margin-top: 20px;
+    /* margin-left: 20px; */
+    /* top: 20px;
+    bottom: 60px; */
+    /* margin-top: 20px; */
     max-height: calc(100vh - 180px);
     overflow-y: auto;
     margin-bottom: 20px;

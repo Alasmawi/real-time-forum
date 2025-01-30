@@ -15,8 +15,8 @@ func DataBase() {
 	defer db.Close()
 
 	var tableName string
-	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='categories'").Scan(&tableName)
-	if err == nil && tableName == "categories" {
+	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='category'").Scan(&tableName)
+	if err == nil && tableName == "category" {
 		log.Println("Database already exists. Skipping table creation.")
 		return
 	}
@@ -69,7 +69,7 @@ func DataBase() {
 
 	const CreateUserTable = `
 		CREATE TABLE IF NOT EXISTS user (
-			userid INTEGER PRIMARY KEY AUTOINCREMENT,
+			user_id INTEGER PRIMARY KEY AUTOINCREMENT,
 			f_name TEXT NOT NULL,
 			l_name TEXT NOT NULL,
 			username TEXT NOT NULL,
@@ -77,18 +77,18 @@ func DataBase() {
 			password TEXT NOT NULL,
 			current_session TEXT,
 			avatar TEXT,
-			FOREIGN KEY (current_session) REFERENCES session(session_id),
+			FOREIGN KEY (current_session) REFERENCES session(session_id)
 		);
 		`
 
 	const CreateNotificationTable = `
 		CREATE TABLE IF NOT EXISTS notification (
 			notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
-			user_userid INTEGER NOT NULL,
+			user_id INTEGER NOT NULL,
 			post_id INTEGER NOT NULL,
 			message TEXT NOT NULL,
 			created_at DATETIME default CURRENT_TIMESTAMP,
-			FOREIGN KEY (user_userid) REFERENCES user(user_id),
+			FOREIGN KEY (user_id) REFERENCES user(user_id),
 			FOREIGN KEY (post_id) REFERENCES post(post_id)
 		);`
 
@@ -119,11 +119,11 @@ func DataBase() {
 		`INSERT INTO category (name, description) VALUES ('IoT & Edge Computing', 'Internet of Things and edge computing trends');`,
 		`INSERT INTO category (name, description) VALUES ('Data Analytics', 'Extracting insights from big data');`,
 		`INSERT INTO category (name, description) VALUES ('Quantum Computing', 'Next-gen computing paradigms and qubits');`,
-		`INSERT INTO categoryl (name, description) VALUES ('SRE & Observability', 'Site Reliability Engineering and system observability');`,
+		`INSERT INTO category (name, description) VALUES ('SRE & Observability', 'Site Reliability Engineering and system observability');`,
 	}
 
 	insertUsers := []string{
-		`INSERT INTO user (l_name, l_name, username, email, password, current_session, role_id, avatar) VALUES ('Alicia', 'Nguyen', 'aliceN', 'aliceN@example.com', '123', 1, 1, 'https://randomuser.me/api/portraits/women/1.jpg');`,
+		`INSERT INTO user (f_name, l_name, username, email, password, current_session, avatar) VALUES ('Alicia', 'Nguyen', 'aliceN', 'aliceN@example.com', '123', 1, 'https://randomuser.me/api/portraits/women/1.jpg');`,
 	}
 
 	allInserts := [][]string{

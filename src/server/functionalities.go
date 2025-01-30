@@ -54,7 +54,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	_, err = db.Exec("DELETE FROM post WHERE postid = ?", postID)
+	_, err = db.Exec("DELETE FROM post WHERE post_id = ?", postID)
 	if err != nil {
 		log.Println("Error deleting post:", err)
 		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}

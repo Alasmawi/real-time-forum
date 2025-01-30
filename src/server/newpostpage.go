@@ -42,7 +42,7 @@ func NewPostPage(w http.ResponseWriter, r *http.Request) {
 
 	var userID int
 	var userName string
-	err = db.QueryRow("SELECT userid, Username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
+	err = db.QueryRow("SELECT user_id, username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
 	if err != nil {
 		log.Println("Error fetching userid and username from user table:", err)
 		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -146,7 +146,7 @@ func NewPostPage(w http.ResponseWriter, r *http.Request) {
 			}
 			err = fUtils.InsertPostCategory(db, postID, categoryIDInt)
 			if err != nil {
-				log.Println("Failed to insert post category")
+				log.Println("Failed to insert post category", err)
 			}
 		}
 

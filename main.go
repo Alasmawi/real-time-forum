@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
-	db "forum/database/sql-utils"
+	// db "forum/database/sql-utils"
 	"forum/src/server"
 	"log"
 	"net/http"
 )
 
 func init() {
-	db.DataBase()
-	//db.DropDataBase()
+	// db.DropDataBase()
+	// db.DataBase()
 }
 
 func main() {
@@ -19,8 +19,8 @@ func main() {
 	// http.HandleFunc("/", server.MainPage)
 	http.HandleFunc("/", server.ReverseMiddleware(server.LoginPage))
 	http.HandleFunc("/logout", server.AuthMiddleware(server.Logout))
-	http.HandleFunc("/signup", server.SignupPage)
-	http.HandleFunc("/home", server.HomePage)
+	http.HandleFunc("/signup", server.ReverseMiddleware(server.SignupPage))
+	http.HandleFunc("/home", server.AuthMiddleware(server.HomePage))
 	http.HandleFunc("/newpost", server.AuthMiddleware(server.NewPostPage))
 	http.HandleFunc("/notifications", server.AuthMiddleware(server.NotificationsPage))
 	http.HandleFunc("/post", server.AuthMiddleware(server.PostPage))

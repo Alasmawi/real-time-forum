@@ -4,14 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConnectHub | Post #{{.Post.PostID}}</title>
+    <title>ConnectHub | Home</title>
     <link rel="icon" type="image/x-icon" href="/static/assets/logowhite.png">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/static/css/main.css">
-    <link rel="stylesheet" href="/static/css/dropdown.css">
     <link rel="stylesheet" href="/static/css/post.css">
-    <link rel="stylesheet" href="/static/css/home.css">
+    <link rel="stylesheet" href="/static/css/dropdown.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/v4-shims.min.js"></script>
 </head>
@@ -29,7 +28,7 @@
                     <i class="fa-regular fa-square-plus"></i> New post
                 </button>
             </form>
-            <!-- 
+            
             <div class="dropdown">
                 <a class="dropdown-toggle dropbtn" href="#"><i class="fa-regular fa-bell"></i></a>
                 <div class="dropdown-content">
@@ -49,41 +48,6 @@
                     {{else}}
                     <p>No notifications yet</p>
                     {{end}}
-                    <form action="/notifications" method="GET">
-                        <button type="submit" class="dropdown-item show-more">Show more</button>
-                    </form>
-                </div>
-            </div> -->
-            <div class="dropdown">
-                <img src="{{if .Avatar}}{{.Avatar}}{{else}}/static/assets/default-avatar.png{{end}}" alt="Avatar"
-                    class="avatar dropbtn">
-                <div class="dropdown-content">
-                    <form action="/home" method="GET">
-                        <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
-                        <button class="profile-button">
-                            {{if or (eq .RoleName "Moderator") (eq .RoleName "Admin")}}
-                            <span class="role"><i class="fa-solid fa-user-tie"></i> {{.RoleName}}</span>
-                            {{end}}
-                            <img src="{{if .Avatar}}{{.Avatar}}{{else}}/static/assets/default-avatar.png{{end}}"
-                                alt="Avatar" class="profile-image">
-                            <div class="profile-info">
-                                <span class="username">@{{.UserName}}</span>
-                                <span class="stats"><i class="fa-solid fa-medal"></i> {{.TotalLikes}}
-                                    [{{.TotalPosts}}]</span>
-                            </div>
-                        </button>
-                    </form><!-- 
-                    <form action="/myprofile" method="GET">
-                        <button type="submit">
-                            <i class="fas fa-user"></i> Your Profile
-                        </button>
-                    </form>
-                    <form action="/settings" method="GET">
-                        <button type="submit">
-                            <i class="fas fa-cog"></i> Account settings
-                        </button>
-                    </form> -->
-                    <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </div>
             </div>
         </div>
@@ -96,94 +60,9 @@
             </div>
         </div>
         <aside class="sidebar">
-            <nav>
-                <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <span>Search</span>
-                    <input type="text" placeholder="Type to search..." class="search-bar">
-                </div>
-                <h3 class="menu-heading">Menu</h3>
-                <ul>
-                    <li>
-                        <form action="/home" method="GET">
-                            <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
-                            <input type="hidden" name="tab" value="posts">
-                            <input type="hidden" name="filter" value="all">
-                            <button type="submit" class="{{if eq .SelectedTab " posts"}}selected{{end}}">
-                                <i class="fas fa-newspaper"></i> Posts
-                            </button>
-                        </form>
-                    </li>
-                    <li>
-                        <form action="/home" method="GET">
-                            <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
-                            <input type="hidden" name="tab" value="tags">
-                            <input type="hidden" name="filter" value="all">
-                            <button type="submit" class="{{if eq .SelectedTab " tags"}}selected{{end}}">
-                                <i class="fas fa-tags"></i> Tags
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-                <h3 class="menu-heading">Activity centre</h3>
-                <ul>
-                    <li>
-                        <form action="/home" method="GET">
-                            <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
-                            <input type="hidden" name="tab" value="your+posts">
-                            <input type="hidden" name="filter" value="newest">
-                            <button type="submit" class="{{if eq .SelectedTab " your+posts"}}selected{{end}}">
-                                <i class="fa-solid fa-grip-lines"></i> Your posts
-                            </button>
-                        </form>
-                    </li>
-                    <!--                     <li>
-                        <form action="/home" method="GET">
-                            <input type="hidden" name="tab" value="your+replies">
-                            <input type="hidden" name="filter" value="newest">
-                            <button type="submit" class="{{if eq .SelectedTab "your+replies"}}selected{{end}}">
-                                <i class="fa-solid fa-reply"></i> Your replies
-                            </button>
-                        </form>
-                    </li> -->
-                    <li>
-                        <form action="/home" method="GET">
-                            <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
-                            <input type="hidden" name="tab" value="your+reactions">
-                            <input type="hidden" name="filter" value="likes">
-                            <button type="submit" class="{{if eq .SelectedTab " your+reactions"}}selected{{end}}">
-                                <i class="fa-regular fa-heart"></i> Your reactions
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-                {{if or (eq .RoleID 1) (eq .RoleID 2)}}
-                <h3 class="menu-heading">Forum management</h3>
-                <ul>
-                    {{if eq .RoleID 1}}
-                    <li>
-                        <form action="/admin" method="GET">
-                            <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
-                            <input type="hidden" name="tab" value="admin">
-                            <button type="submit" class="{{if eq .SelectedTab " admin"}}selected{{end}}">
-                                <i class="fas fa-user-shield"></i> Admin Dashboard
-                            </button>
-                        </form>
-                    </li>
-                    {{else if eq .RoleID 2}}
-                    <li>
-                        <form action="/moderator" method="GET">
-                            <!-- <input type="hidden" name="user" value="{{.UserID}}"> -->
-                            <input type="hidden" name="tab" value="moderator">
-                            <button type="submit" class="{{if eq .SelectedTab " moderator"}}selected{{end}}">
-                                <i class="fas fa-user-cog"></i> Moderator Panel
-                            </button>
-                        </form>
-                    </li>
-                    {{end}}
-                </ul>
-                {{end}}
-            </nav>
+            <!-- <nav>
+               
+            </nav> -->
             <div class="social-icons">
                 <a href="https://instagram.com/reboot01.coding" target="_blank" class="social-link"><i
                         class="fab fa-instagram"></i>
@@ -197,40 +76,20 @@
         </aside>
         <main>
             <section class="feed">
-                <div class="container">
-                    <!--                     {{if or ( or (eq (printf "%v" $.RoleID) "1") (eq (printf "%v" $.RoleID) "2")) (eq (printf "%v" $.UserID) (printf "%v" .Post.UserUserID))}}
-                    <div class="post-actions">
-                        <div class="dropdown" style="position: absolute; right: 0;">
-                            <button class="dropbtn" id="dropdownButton">...</button>
-                            <div class="dropdown-content dot" id="dropdownContent">
-                                {{if eq (printf "%v" $.UserID) (printf "%v" .Post.UserUserID)}}
-                                <a href="/deletepost?id={{.Post.PostID}}" class="action-link delete"><i class="fa-regular fa-trash-can"></i> Delete</a>
-                                {{end}}
-                                {{if eq (printf "%v" $.RoleID) "1"}}
-                                <a href="/deletepost?id={{.Post.PostID}}" class="action-link delete"><i class="fa-regular fa-trash-can"></i> Delete Post</a>
-                                {{end}}
-                                {{if eq (printf "%v" $.RoleID) "2"}}
-                                <a href="/deletepost?id={{.Post.PostID}}" class="action-link delete"><i class="fa-regular fa-trash-can"></i> Delete Post</a>
-                                <a href="/reportpost?id={{.Post.PostID}}" class="action-link report"><i class="fa-solid fa-ban"></i> Report Post</a>
-                                {{end}}
-                            </div>
-                        </div>
-                    </div>
-                    {{end}} -->
+                <article class="post">
                     <div class="post-header">
                         <img src="{{if .Post.Avatar.Valid}}{{.Post.Avatar.String}}{{else}}/static/assets/default-avatar.png{{end}}"
                             alt="Avatar">
                         <div class="post-info">
                             <h3>{{.Post.FirstName}} {{.Post.LastName}}</h3>
                             <span>@{{.Post.Username}}</span>
-                            <time><i class="fa fa-clock"></i> {{.Post.PostAt.Format "02/01/2006 - 15:04"}}</time>
                         </div>
                     </div>
-                    <div class="post-content">
-                        <p>{{.Post.Content}}</p>
-                        <!--                         {{if .Post.Image.Valid}}
-                        <img src="{{.Post.Image.String}}" alt="Post Image">
-                        {{end}} -->
+                    <div class="post-body">
+                            <button type="submit" class="action-link"
+                                style="background:none; border:none; color:inherit; cursor:pointer; text-decoration:none;">
+                                <p style="font-weight: 500;">{{.Post.Content}}</p>
+                            </button>
                         <div class="post-categories">
                             {{range .Categories}}
                             <form action="/home" method="GET">
@@ -245,41 +104,17 @@
                         </div>
                     </div>
                     <div class="post-actions">
-                        <form action="/like" method="POST" style="display:inline;">
-                            <input type="hidden" name="post_id" value="{{.Post.PostID}}">
-                            <input type="hidden" name="user" value="{{.UserID}}">
-                            <button type="submit"><i class="fa-solid fa-arrow-up"></i> {{.Post.Likes}}</button>
-                        </form>
-                        <form action="/dislike" method="POST" style="display:inline;">
-                            <input type="hidden" name="post_id" value="{{.Post.PostID}}">
-                            <input type="hidden" name="user" value="{{.UserID}}">
-                            <button type="submit"><i class="fa-solid fa-arrow-up" style="rotate: 180deg;"></i>
-                                {{.Post.Dislikes}}</button>
-                        </form>
-                        <span><i class="fa-regular fa-message"></i> {{.Post.Comments}}</span>
+                            <button type="submit" class="action-link"
+                                style="background:none; border:none; color:inherit; cursor:pointer; text-decoration:none;">
+                                <span class="hover-effect"><i class="fa-regular fa-message"></i> {{.Post.Comments}}</span>
+                            </button>
+                        <time><i class="fa fa-clock"></i> {{.Post.PostAt.Format "02/01/2006 - 15:04"}}</time>
                     </div>
+                </article>
+                <div class="container">
                     <div class="comments-section">
                         <h2>Comments</h2>
-                        {{range .Comments}}<!-- 
-                        {{if or ( or (eq (printf "%v" $.RoleID) "1") (eq (printf "%v" $.RoleID) "2")) (eq (printf "%v" $.UserID) (printf "%v" .UserID))}}
-                        <div class="post-actions">
-                            <div class="dropdown" style="position: absolute; right: 0;">
-                                <button class="dropbtn" id="dropdownButton">...</button>
-                                <div class="dropdown-content dot" id="dropdownContent">
-                                    {{if eq (printf "%v" $.UserID) (printf "%v" .UserID)}}
-                                    <a href="/deletepost?id={{.PostID}}" class="action-link delete"><i class="fa-regular fa-trash-can"></i> Delete</a>
-                                    {{end}}
-                                    {{if eq (printf "%v" $.RoleID) "1"}}
-                                    <a href="/deletepost?id={{.PostID}}" class="action-link delete"><i class="fa-regular fa-trash-can"></i> Delete Comment</a>
-                                    {{end}}
-                                    {{if eq (printf "%v" $.RoleID) "2"}}
-                                    <a href="/deletepost?id={{.PostID}}" class="action-link delete"><i class="fa-regular fa-trash-can"></i> Delete Comment</a>
-                                    <a href="/reportpost?id={{.PostID}}" class="action-link report"><i class="fa-solid fa-ban"></i> Report Comment</a>
-                                    {{end}}
-                                </div>
-                            </div>
-                        </div>
-                        {{end}} -->
+                        {{range .Comments}}
                         <div class="comment">
                             <div class="comment-header">
                                 <img src="{{if .Avatar.Valid}}{{.Avatar.String}}{{else}}/static/assets/default-avatar.png{{end}}"
@@ -294,20 +129,6 @@
                             </div>
                                 <div class="comment-content">
                                     <p>{{.Content}}</p>
-                                </div>
-                                <div class="comment-actions">
-                                    <form action="/commentlike" method="POST" style="display:inline;">
-                                        <input type="hidden" name="comment_id" value="{{.ID}}">
-                                        <input type="hidden" name="user" value="{{.UserID}}">
-                                        <button type="submit"><i class="fa-solid fa-arrow-up"></i> {{.Likes}}</button>
-                                    </form>
-                                    <form action="/commentdislike" method="POST" style="display:inline;">
-                                        <input type="hidden" name="comment_id" value="{{.ID}}">
-                                        <input type="hidden" name="user" value="{{.UserID}}">
-                                        <button type="submit"><i class="fa-solid fa-arrow-up"
-                                                style="rotate: 180deg;"></i>
-                                            {{.Dislikes}}</button>
-                                    </form>
                                     <time><i class="fa fa-clock"></i> {{.CreatedAt.Format "02/01/2006 - 15:04"}}</time>
                                 </div>
                         </div>
@@ -329,8 +150,8 @@
                 </div>
             </section>
         </main>
-        <script src="/static/js/dropdown.js"></script>
-        <script src="/static/js/postpage.js"></script>
+    </div>
+    <script src="/static/js/dropdown.js"></script>
 </body>
 
 </html>

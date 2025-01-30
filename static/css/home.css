@@ -1,15 +1,15 @@
-.filters {
+.online-users {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
     margin-bottom: 10px;
 }
 
-.filters button {
+.online-users button {
     text-decoration: none;
 }
 
-.filters button {
+.online-users button {
     padding: 8px 16px;
     border-radius: 30px;
     border: none;
@@ -19,12 +19,12 @@
     transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.filters .new {
+.online-users .new {
     background-color: #3B82F6;
     color: #FFFFFF;
 }
 
-.filters button:hover {
+.online-users button:hover {
     background-color: #2563EB;
     color: #FFFFFF;
 }
@@ -82,7 +82,8 @@
 
 .post-categories {
     margin-top: 10px;
-    display: inline;
+    display: flex;
+    gap: 10px;
 }
 
 .post-categories button {
@@ -92,6 +93,7 @@
     font: inherit;
     color: inherit;
     transition: color 0.3s ease;
+    padding: 0;
 }
 
 .category-box {
@@ -101,9 +103,8 @@
     padding: 5px 10px;
     border-radius: 12px;
     font-size: 12px;
-    margin-right: 5px;
     margin-bottom: 5px;
-    cursor: pointer;
+    cursor: default;
     transition: background-color 0.3s ease;
 
 }

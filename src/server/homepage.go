@@ -11,13 +11,6 @@ import (
 )
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/home" {
-		log.Println("Invalid URL path")
-		err := strct.ErrorPageData{Code: "404", ErrorMsg: "PAGE NOT FOUND"}
-		errHandler(w, r, &err)
-		return
-	}
-
 	if r.Method != "GET" {
 		log.Println("Method not allowed")
 		err := strct.ErrorPageData{Code: "405", ErrorMsg: "METHOD NOT ALLOWED"}
@@ -47,7 +40,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 
 		seshVal := seshCok.Value
 
-		err = db.QueryRow("SELECT userid, Username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
+		err = db.QueryRow("SELECT user_id, username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
 		if err == sql.ErrNoRows {
 			http.SetCookie(w, &http.Cookie{
 				Name:     "session_token",
@@ -56,6 +49,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 				HttpOnly: true,
 			})
 			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
 		} else if err != nil {
 			log.Println("Error fetching userid ID from user table:", err)
 			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -85,8 +79,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 
 	if hasSession {
 		var avatar sql.NullString
-		var roleID int
-		err = db.QueryRow("SELECT avatar, role_id FROM user WHERE userID = ?", userID).Scan(&avatar, &roleID)
+		err = db.QueryRow("SELECT avatar FROM user WHERE user_id = ?", userID).Scan(&avatar)
 		if err == sql.ErrNoRows {
 			log.Println("No user found with the given ID:", userID)
 			err := strct.ErrorPageData{Code: "404", ErrorMsg: "USER NOT FOUND"}
@@ -99,16 +92,9 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var totalLikes, totalPosts int
-		err = db.QueryRow("SELECT COUNT(*) FROM likes WHERE user_userID = ?", userID).Scan(&totalLikes)
-		if err != nil {
-			log.Println("Failed to fetch total likes:", err)
-			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-			errHandler(w, r, &err)
-			return
-		}
+		var totalPosts int
 
-		err = db.QueryRow("SELECT COUNT(*) FROM post WHERE user_userID = ?", userID).Scan(&totalPosts)
+		err = db.QueryRow("SELECT COUNT(*) FROM post WHERE user_id = ?", userID).Scan(&totalPosts)
 		if err != nil {
 			log.Println("Failed to fetch total posts:", err)
 			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -121,7 +107,6 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 			UserID:         userID,
 			UserName:       userName,
 			Avatar:         avatar.String,
-			TotalLikes:     totalLikes,
 			TotalPosts:     totalPosts,
 			Users:          users,
 			Posts:          posts,

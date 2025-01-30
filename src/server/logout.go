@@ -23,12 +23,12 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 
-	_, err = db.Exec("DELETE FROM session WHERE userid = ?", userID)
+	_, err = db.Exec("DELETE FROM session WHERE user_id = ?", userID)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = db.Exec("UPDATE user SET current_session = NULL WHERE userid = ?", userID)
+	_, err = db.Exec("UPDATE user SET current_session = NULL WHERE user_id = ?", userID)
 	if err != nil {
 		log.Fatal(err)
 	}

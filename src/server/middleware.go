@@ -60,6 +60,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 				HttpOnly: true,
 			})
 			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
 		}
 		next.ServeHTTP(w, r)
 	})

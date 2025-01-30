@@ -45,7 +45,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 
 	var userID int
 	var userName string
-	err = db.QueryRow("SELECT userid, Username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
+	err = db.QueryRow("SELECT user_id, username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
 	if err != nil {
 		log.Println("Error fetching userid and username from user table:", err)
 		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -62,14 +62,12 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 
 	var post strct.Post
 	err = db.QueryRow(`
-        SELECT post.postid, post.image, post.content, post.post_at, post.user_userid, user.Username, user.F_name, user.L_name, user.Avatar,
-               (SELECT COUNT(*) FROM likes WHERE likes.post_postid = post.postid) AS Likes,
-               (SELECT COUNT(*) FROM dislikes WHERE dislikes.post_postid = post.postid) AS Dislikes,
-               (SELECT COUNT(*) FROM comment WHERE comment.post_postid = post.postid) AS Comments
+        SELECT post.post_id, post.image, post.content, post.post_at, post.user_id, user.username, user.f_name, user.l_name, user.avatar,
+        (SELECT COUNT(*) FROM comment WHERE comment.post_id = post.post_id) AS Comments
         FROM post
-        JOIN user ON post.user_userid = user.userid
-        WHERE post.postid = ?
-		`, postID).Scan(&post.PostID, &post.Image, &post.Content, &post.PostAt, &post.UserUserID, &post.Username, &post.FirstName, &post.LastName, &post.Avatar, &post.Likes, &post.Dislikes, &post.Comments)
+        JOIN user ON post.user_id = user.user_id
+        WHERE post.post_id = ?
+		`, postID).Scan(&post.PostID, &post.Image, &post.Content, &post.PostAt, &post.UserUserID, &post.Username, &post.FirstName, &post.LastName, &post.Avatar, &post.Comments)
 	if err != nil {
 		log.Println("Failed to fetch posts")
 		errData := strct.ErrorPageData{Code: "400", ErrorMsg: "BAD REQUEST"}

@@ -45,7 +45,7 @@ func ReverseMiddleware(next http.HandlerFunc) http.HandlerFunc {
 					Expires:  time.Now().Add(-time.Hour),
 					HttpOnly: true,
 				})
-				http.Redirect(w, r, "/", http.StatusBadRequest)
+				http.Redirect(w, r, "/", http.StatusSeeOther)
 			} else if exists {
 				fmt.Println("Valid session")
 				http.Redirect(w, r, "/home", http.StatusSeeOther)
