@@ -3,7 +3,8 @@ package database
 import (
 	"database/sql"
 	"log"
-	strct "forum/structs"
+
+	strct "reboot01.com/js/forum/structs"
 )
 
 func GetAllCategories() ([]strct.Category, error) {
@@ -55,5 +56,3 @@ func GetAllUsers() ([]strct.User, error) {
 
 	return users, nil
 }
-
-

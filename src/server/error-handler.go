@@ -1,7 +1,7 @@
 package server
 
 import (
-	strct "forum/structs"
+	strct "reboot01.com/js/forum/structs"
 	"log"
 	"net/http"
 )

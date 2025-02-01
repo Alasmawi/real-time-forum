@@ -3,8 +3,8 @@ package server
 import (
 	"database/sql"
 	"fmt"
-	fUtil "forum/database/feature-utils"
-	strct "forum/structs"
+	fUtil "reboot01.com/js/forum/database/feature-utils"
+	strct "reboot01.com/js/forum/structs"
 	"log"
 	"net/http"
 	"time"

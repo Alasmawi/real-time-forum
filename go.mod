@@ -1,4 +1,4 @@
-module forum
+module reboot01.com/js/forum
 
 go 1.23.2
 

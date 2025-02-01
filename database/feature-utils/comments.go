@@ -3,9 +3,10 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	strct "forum/structs"
 	"log"
 	"time"
+
+	strct "reboot01.com/js/forum/structs"
 )
 
 func GetComments(db *sql.DB) ([]strct.Comment, error) {

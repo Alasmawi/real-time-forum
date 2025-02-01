@@ -1,10 +1,11 @@
 package server
 
 import (
-	strct "forum/structs"
 	"log"
 	"net/http"
 	"regexp"
+
+	strct "reboot01.com/js/forum/structs"
 )
 
 func SignupPage(w http.ResponseWriter, r *http.Request) {

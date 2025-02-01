@@ -2,8 +2,8 @@ package server
 
 import (
 	"database/sql"
-	uuid "forum/src/uuid"
-	strct "forum/structs"
+	uuid "reboot01.com/js/forum/src/uuid"
+	strct "reboot01.com/js/forum/structs"
 	"log"
 	"net/http"
 	"time"

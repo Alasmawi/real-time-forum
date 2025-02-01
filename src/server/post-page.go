@@ -2,11 +2,12 @@ package server
 
 import (
 	"fmt"
-	fUtils "forum/database/feature-utils"
-	strct "forum/structs"
 	"log"
 	"net/http"
 	"strconv"
+
+	fUtils "reboot01.com/js/forum/database/feature-utils"
+	strct "reboot01.com/js/forum/structs"
 )
 
 func PostPage(w http.ResponseWriter, r *http.Request) {

@@ -4,7 +4,8 @@ import (
 	"log"
 	"net/http"
 	"time"
-	strct "forum/structs"
+
+	strct "reboot01.com/js/forum/structs"
 )
 
 func Logout(w http.ResponseWriter, r *http.Request) {

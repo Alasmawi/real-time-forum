@@ -1,10 +1,11 @@
 package server
 
 import (
-	strct "forum/structs"
 	"log"
 	"net/http"
 	"strconv"
+
+	strct "reboot01.com/js/forum/structs"
 )
 
 func NotificationsPage(w http.ResponseWriter, r *http.Request) {

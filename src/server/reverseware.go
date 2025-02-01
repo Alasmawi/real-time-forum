@@ -2,10 +2,11 @@ package server
 
 import (
 	"fmt"
-	strct "forum/structs"
 	"log"
 	"net/http"
 	"time"
+
+	strct "reboot01.com/js/forum/structs"
 )
 
 func ReverseMiddleware(next http.HandlerFunc) http.HandlerFunc {

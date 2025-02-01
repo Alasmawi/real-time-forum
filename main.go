@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	// db "forum/database/sql-utils"
-	s "forum/src/server"
+	// db "reboot01.com/js/forum/database/sql-utils"
 	"log"
 	"net/http"
-)
 
+	s "reboot01.com/js/forum/src/server"
+)
 
 func init() {
 	// db.DropDataBase()
@@ -16,7 +16,7 @@ func init() {
 
 func main() {
 	mux := http.NewServeMux()
-	
+
 	mux.HandleFunc("/{$}", s.ReverseMiddleware(s.LoginPage))
 	mux.HandleFunc("POST /logout", s.AuthMiddleware(s.Logout))
 	mux.HandleFunc("/signup", s.ReverseMiddleware(s.SignupPage))

@@ -2,9 +2,10 @@ package database
 
 import (
 	"database/sql"
-	strct "forum/structs"
 	"log"
 	"time"
+
+	strct "reboot01.com/js/forum/structs"
 )
 
 func GetAllPosts() ([]strct.Post, error) {

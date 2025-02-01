@@ -3,12 +3,13 @@ package server
 import (
 	"database/sql"
 	"fmt"
-	fUtils "forum/database/feature-utils"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
-	strct "forum/structs"
+
+	fUtils "reboot01.com/js/forum/database/feature-utils"
+	strct "reboot01.com/js/forum/structs"
 )
 
 const maxPostLength = 500
@@ -57,12 +58,12 @@ func CreatePage(w http.ResponseWriter, r *http.Request) {
 			SelectedTab   string
 			RoleID        int
 		}{
-			UserID:        userID,
-			Categories:    categories,
+			UserID:     userID,
+			Categories: categories,
 			// Notifications: notifications,
 			// Avatar:        userAvatar,
-			UserName:      userName,
-			SelectedTab:   "posts",
+			UserName:    userName,
+			SelectedTab: "posts",
 		}
 
 		err = strct.Templates.ExecuteTemplate(w, "create.html", data)
@@ -107,7 +108,7 @@ func CreatePage(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			defer file.Close()
 
-			image.String = "forum/static/uploads"
+			image.String = "reboot01.com/js/forum/static/uploads"
 			image.Valid = true
 		} else {
 			image.Valid = false
