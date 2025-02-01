@@ -6,8 +6,8 @@ import (
 	strct "forum/structs"
 )
 
-func GetAllCategories(db *sql.DB) ([]strct.Category, error) {
-	rows, err := db.Query("SELECT category_id, name, description FROM category")
+func GetAllCategories() ([]strct.Category, error) {
+	rows, err := strct.Db.Query("SELECT category_id, name, description FROM category")
 	if err != nil {
 		return nil, err
 	}
@@ -28,8 +28,8 @@ func GetAllCategories(db *sql.DB) ([]strct.Category, error) {
 	return categories, nil
 }
 
-func GetAllUsers(db *sql.DB) ([]strct.User, error) {
-	rows, err := db.Query("SELECT user_id, f_name, l_name, username, email, avatar FROM user")
+func GetAllUsers() ([]strct.User, error) {
+	rows, err := strct.Db.Query("SELECT user_id, f_name, l_name, username, email, avatar FROM user")
 	if err != nil {
 		log.Println("Error executing query:", err)
 		return nil, err

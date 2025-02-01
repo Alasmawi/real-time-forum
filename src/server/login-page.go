@@ -10,26 +10,17 @@ import (
 )
 
 func LoginPage(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("sqlite3", "./database/main.db")
-	if err != nil {
-		log.Println("Database connection failed")
-		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-		errHandler(w, r, &err)
-		return
-	}
-	defer db.Close()
-
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
 	if r.Method == "POST" {
 		var userID int
 		var dbPassword, userName string
-		err = db.QueryRow("SELECT user_id, password, username FROM user WHERE email = ?", email).Scan(&userID, &dbPassword, &userName)
+		err := strct.Db.QueryRow("SELECT user_id, password, username FROM user WHERE email = ?", email).Scan(&userID, &dbPassword, &userName)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				// No credentials found with the given email
-				err = templates.ExecuteTemplate(w, "index.html", map[string]interface{}{
+				err = strct.Templates.ExecuteTemplate(w, "index.html", map[string]interface{}{
 					"ErrorMsg": "Invalid email or password",
 				})
 				if err != nil {
@@ -46,7 +37,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if !VerifyPassword(password, dbPassword) {
-			err := templates.ExecuteTemplate(w, "index.html", map[string]interface{}{
+			err := strct.Templates.ExecuteTemplate(w, "index.html", map[string]interface{}{
 				"ErrorMsg": "Invalid email or password",
 			})
 			if err != nil {
@@ -76,14 +67,14 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 		})
 
 		// Update the user's session ID in the session table
-		result, err := db.Exec("UPDATE session SET session_id = ? WHERE user_id = ?", stringToken, userID)
+		result, err := strct.Db.Exec("UPDATE session SET session_id = ? WHERE user_id = ?", stringToken, userID)
 		if err != nil {
 			log.Println("Error updating session ID in session table:", err)
 			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &errData)
 			return
 		} else if rowsAffected, err := result.RowsAffected(); err == nil && rowsAffected == 0 { //only insert a new row if no record is updated (i.e., no session is found)
-			_, err := db.Exec("INSERT INTO session (session_id, user_id, end_time) VALUES (?, ?, ?) RETURNING session_id",
+			_, err := strct.Db.Exec("INSERT INTO session (session_id, user_id, end_time) VALUES (?, ?, ?) RETURNING session_id",
 				stringToken, userID, time.Now().Add(1*time.Hour))
 			if err != nil {
 				log.Println("Error creating new session:", err)
@@ -94,7 +85,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Update the user's session ID in the database
-		_, err = db.Exec("UPDATE user SET current_session = ? WHERE user_id = ?", stringToken, userID)
+		_, err = strct.Db.Exec("UPDATE user SET current_session = ? WHERE user_id = ?", stringToken, userID)
 		if err != nil {
 			log.Println("Error updating session ID in user table:", err)
 			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -108,7 +99,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	}
 
-	err = templates.ExecuteTemplate(w, "index.html", nil)
+	err := strct.Templates.ExecuteTemplate(w, "index.html", nil)
 	if err != nil {
 		log.Println("Error rendering login page:", err)
 		errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}

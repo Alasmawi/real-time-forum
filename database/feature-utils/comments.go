@@ -38,14 +38,14 @@ func GetComments(db *sql.DB) ([]strct.Comment, error) {
 	return comments, nil
 }
 
-func GetCommentsForPost(db *sql.DB, postID int) ([]strct.Comment, error) {
+func GetCommentsForPost(postID int) ([]strct.Comment, error) {
 	var comments []strct.Comment
 
 	query := `SELECT comment.comment_id, comment.post_id, comment.user_id, user.f_name, user.l_name, user.username, comment.content, comment.comment_at, user.avatar
               FROM comment
               JOIN user ON comment.user_id = user.user_id
 			  WHERE comment.post_id = ?`
-	rows, err := db.Query(query, postID)
+	rows, err := strct.Db.Query(query, postID)
 	if err != nil {
 		return nil, fmt.Errorf("GetCommentsForPost: %v", err)
 	}

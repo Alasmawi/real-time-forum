@@ -1,7 +1,6 @@
 package server
 
 import (
-	"database/sql"
 	"fmt"
 	fUtils "forum/database/feature-utils"
 	strct "forum/structs"
@@ -11,27 +10,6 @@ import (
 )
 
 func PostPage(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/post" {
-		log.Println("Invalid URL path")
-		err := strct.ErrorPageData{Code: "404", ErrorMsg: "PAGE NOT FOUND"}
-		errHandler(w, r, &err)
-		return
-	}
-
-	if r.Method != "GET" {
-		log.Println("Method not allowed")
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	db, err := sql.Open("sqlite3", "./database/main.db")
-	if err != nil {
-		log.Println("Error opening database:", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
 	// Fetch session cookie
 	seshCok, err := r.Cookie("session_token")
 	if err != nil {
@@ -45,7 +23,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 
 	var userID int
 	var userName string
-	err = db.QueryRow("SELECT user_id, username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
+	err = strct.Db.QueryRow("SELECT user_id, username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
 	if err != nil {
 		log.Println("Error fetching userid and username from user table:", err)
 		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -53,7 +31,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postID := r.URL.Query().Get("id")
+	postID := r.PathValue("postID")
 	if postID == "" {
 		log.Println("Post ID not found in query parameters")
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
@@ -61,7 +39,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var post strct.Post
-	err = db.QueryRow(`
+	err = strct.Db.QueryRow(`
         SELECT post.post_id, post.image, post.content, post.post_at, post.user_id, user.username, user.f_name, user.l_name, user.avatar,
         (SELECT COUNT(*) FROM comment WHERE comment.post_id = post.post_id) AS Comments
         FROM post
@@ -81,7 +59,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	comments, err := fUtils.GetCommentsForPost(db, postIDInt)
+	comments, err := fUtils.GetCommentsForPost(postIDInt)
 	if err != nil {
 		log.Println("Error getting comments for post:", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -95,7 +73,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch categories for the post
-	categories, err := fUtils.GetCategoriesForPost(db, post.PostID)
+	categories, err := fUtils.GetCategoriesForPost(post.PostID)
 	if err != nil {
 		log.Println("Error fetching categories for post:", err)
 		return
@@ -111,7 +89,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 		Categories: categories,
 	}
 
-	err = templates.ExecuteTemplate(w, "post.html", data)
+	err = strct.Templates.ExecuteTemplate(w, "post.html", data)
 	if err != nil {
 		log.Println("Error executing template:", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)

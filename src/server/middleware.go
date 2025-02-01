@@ -1,7 +1,6 @@
 package server
 
 import (
-	"database/sql"
 	"fmt"
 	strct "forum/structs"
 	"log"
@@ -11,14 +10,6 @@ import (
 
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		db, err := sql.Open("sqlite3", "./database/main.db")
-		if err != nil {
-			log.Println("Database connection failed")
-			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-			errHandler(w, r, &err)
-			return
-		}
-		defer db.Close()
 
 		// Fetch session cookie
 		seshCok, err := r.Cookie("session_token")
@@ -45,7 +36,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		var exists bool
-		err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE current_session = ?)", seshVal).Scan(&exists)
+		err = strct.Db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE current_session = ?)", seshVal).Scan(&exists)
 		if err != nil {
 			log.Println("Error :", err)
 			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}

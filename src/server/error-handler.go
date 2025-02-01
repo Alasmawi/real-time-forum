@@ -7,7 +7,7 @@ import (
 )
 
 func errHandler(w http.ResponseWriter, _ *http.Request, errData *strct.ErrorPageData) {
-	err := templates.ExecuteTemplate(w, "error.html", errData)
+	err := strct.Templates.ExecuteTemplate(w, "error.html", errData)
 	if err != nil {
 		log.Println("Error rendering error page:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -18,7 +18,7 @@ func errHandler(w http.ResponseWriter, _ *http.Request, errData *strct.ErrorPage
 }
 
 func AutherrHandler(w http.ResponseWriter, _ *http.Request, errData *strct.ErrorPageData) {
-	err := templates.ExecuteTemplate(w, "error.html", errData)
+	err := strct.Templates.ExecuteTemplate(w, "error.html", errData)
 	if err != nil {
 		log.Println("Error rendering error page:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

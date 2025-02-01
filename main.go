@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	// db "forum/database/sql-utils"
-	"forum/src/server"
+	s "forum/src/server"
 	"log"
 	"net/http"
 )
+
 
 func init() {
 	// db.DropDataBase()
@@ -14,20 +15,22 @@ func init() {
 }
 
 func main() {
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
-
-	// http.HandleFunc("/", server.MainPage)
-	http.HandleFunc("/", server.ReverseMiddleware(server.LoginPage))
-	http.HandleFunc("/logout", server.AuthMiddleware(server.Logout))
-	http.HandleFunc("/signup", server.ReverseMiddleware(server.SignupPage))
-	http.HandleFunc("/home", server.AuthMiddleware(server.HomePage))
-	http.HandleFunc("/newpost", server.AuthMiddleware(server.NewPostPage))
-	http.HandleFunc("/notifications", server.AuthMiddleware(server.NotificationsPage))
-	http.HandleFunc("/post", server.AuthMiddleware(server.PostPage))
-	http.HandleFunc("/deletepost", server.AuthMiddleware(server.DeletePost))
-	http.HandleFunc("/addcomment", server.AuthMiddleware(server.AddComment))
+	mux := http.NewServeMux()
+	
+	mux.HandleFunc("/{$}", s.ReverseMiddleware(s.LoginPage))
+	mux.HandleFunc("POST /logout", s.AuthMiddleware(s.Logout))
+	mux.HandleFunc("/signup", s.ReverseMiddleware(s.SignupPage))
+	mux.HandleFunc("GET /home", s.AuthMiddleware(s.HomePage))
+	mux.HandleFunc("/create", s.AuthMiddleware(s.CreatePage))
+	mux.HandleFunc("GET /notifications", s.AuthMiddleware(s.NotificationsPage))
+	mux.HandleFunc("GET /post/{postID}", s.AuthMiddleware(s.PostPage))
+	mux.HandleFunc("POST /deletepost", s.AuthMiddleware(s.DeletePost))
+	mux.HandleFunc("POST /addcomment", s.AuthMiddleware(s.AddComment))
 
 	fmt.Println("Server running on http://localhost:8080\nTo stop the server press Ctrl+C")
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	fileServer := http.FileServer(http.Dir("./static/"))
+	http.Handle("/static/*", http.StripPrefix("/static/", fileServer))
+	err := http.ListenAndServe(":8080", mux)
+	log.Fatal(err)
 }

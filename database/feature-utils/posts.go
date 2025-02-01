@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-func GetAllPosts(db *sql.DB) ([]strct.Post, error) {
-	rows, err := db.Query(`SELECT post.post_id, post.image, post.content, post.post_at, post.user_id, user.username, user.f_name, user.l_name, user.avatar,
-        (SELECT COUNT(*) FROM comment WHERE comment.post_id = post.post_id) AS Comments
-        FROM post
-        JOIN user ON post.user_id = user.user_id
-        ORDER BY post.post_at DESC`)
+func GetAllPosts() ([]strct.Post, error) {
+	rows, err := strct.Db.Query(`SELECT post.post_id, post.image, post.content, post.post_at, post.user_id, user.username, user.f_name, user.l_name, user.avatar,
+		(SELECT COUNT(*) FROM comment WHERE comment.post_id = post.post_id) AS Comments
+		FROM post
+		JOIN user ON post.user_id = user.user_id
+		ORDER BY post.post_at DESC`)
 	if err != nil {
 		log.Println("Error executing query:", err)
 		return nil, err
@@ -35,7 +35,7 @@ func GetAllPosts(db *sql.DB) ([]strct.Post, error) {
 		}
 
 		// Fetch categories for the post
-		categories, err := GetCategoriesForPost(db, post.PostID)
+		categories, err := GetCategoriesForPost(post.PostID)
 		if err != nil {
 			log.Println("Error fetching categories for post:", err)
 			return nil, err
@@ -51,11 +51,12 @@ func GetAllPosts(db *sql.DB) ([]strct.Post, error) {
 
 	return posts, nil
 }
-func GetCategoriesForPost(db *sql.DB, postID int) ([]strct.Category, error) {
-	rows, err := db.Query(`SELECT c.category_id, c.name, c.description
-        FROM category c
-        JOIN post_has_category phc ON c.category_id = phc.post_category_id
-        WHERE phc.post_id = ?`, postID)
+
+func GetCategoriesForPost(postID int) ([]strct.Category, error) {
+	rows, err := strct.Db.Query(`SELECT c.category_id, c.name, c.description
+		FROM category c
+		JOIN post_has_category phc ON c.category_id = phc.post_category_id
+		WHERE phc.post_id = ?`, postID)
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +77,8 @@ func GetCategoriesForPost(db *sql.DB, postID int) ([]strct.Category, error) {
 	return categories, nil
 }
 
-func InsertPost(db *sql.DB, content string, image sql.NullString, userID string) (int, error) {
-	stmt, err := db.Prepare("INSERT INTO post (image, content, post_at, user_id) VALUES (?, ?, ?, ?)")
+func InsertPost(content string, image sql.NullString, userID string) (int, error) {
+	stmt, err := strct.Db.Prepare("INSERT INTO post (image, content, post_at, user_id) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		return 0, err
 	}
@@ -96,8 +97,8 @@ func InsertPost(db *sql.DB, content string, image sql.NullString, userID string)
 	return int(lastID), nil
 }
 
-func InsertPostCategory(db *sql.DB, postID int, categoryID int) error {
-	stmt, err := db.Prepare("INSERT INTO post_has_category (post_id, category_id) VALUES (?, ?)")
+func InsertPostCategory(postID int, categoryID int) error {
+	stmt, err := strct.Db.Prepare("INSERT INTO post_has_category (post_id, category_id) VALUES (?, ?)")
 	if err != nil {
 		return err
 	}
@@ -105,38 +106,4 @@ func InsertPostCategory(db *sql.DB, postID int, categoryID int) error {
 
 	_, err = stmt.Exec(postID, categoryID)
 	return err
-}
-
-func GetUserPosts(db *sql.DB, userID int, filter string) ([]strct.Post, error) {
-	var x string
-	if filter == "oldest" {
-		x = "post.post_at ASC"
-	} else {
-		x = "post.post_at DESC"
-	}
-
-	rows, err := db.Query(`SELECT post.post_id, post.content, post.post_at, post.user_id, 
-		user.avatar, user.f_name, user.l_name, user.username,
-        (SELECT COUNT(*) FROM comment WHERE comment.post_postid = post.postid) AS Comments 
-		FROM post 
-		JOIN user ON post.user_id = user.user_id WHERE post.user_id = ? ORDER BY `+x, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var posts []strct.Post
-	for rows.Next() {
-		var post strct.Post
-		if err := rows.Scan(&post.PostID, &post.Content, &post.PostAt, &post.UserUserID, &post.Avatar, &post.FirstName, &post.LastName, &post.Username, &post.Comments); err != nil {
-			return nil, err
-		}
-		posts = append(posts, post)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return posts, nil
 }

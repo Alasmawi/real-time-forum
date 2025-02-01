@@ -1,7 +1,6 @@
 package server
 
 import (
-	"database/sql"
 	strct "forum/structs"
 	"log"
 	"net/http"
@@ -9,13 +8,6 @@ import (
 )
 
 func SignupPage(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/signup" {
-		log.Println("Invalid URL path")
-		err := strct.ErrorPageData{Code: "404", ErrorMsg: "PAGE NOT FOUND"}
-		errHandler(w, r, &err)
-		return
-	}
-
 	if r.Method == "POST" {
 		F_name := r.FormValue("first_name")
 		L_name := r.FormValue("last_name")
@@ -26,7 +18,7 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 
 		emailRegex := regexp.MustCompile(`^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$`)
 		if !emailRegex.MatchString(email) {
-			err := templates.ExecuteTemplate(w, "signup.html", map[string]string{
+			err := strct.Templates.ExecuteTemplate(w, "signup.html", map[string]string{
 				"ErrorMessage": "Invalid email format",
 			})
 			if err != nil {
@@ -38,7 +30,7 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if password != confirmPassword {
-			err := templates.ExecuteTemplate(w, "signup.html", map[string]string{
+			err := strct.Templates.ExecuteTemplate(w, "signup.html", map[string]string{
 				"ErrorMessage": "Passwords do not match",
 			})
 			if err != nil {
@@ -49,17 +41,8 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		db, err := sql.Open("sqlite3", "./database/main.db")
-		if err != nil {
-			log.Println("Database connection failed")
-			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-			errHandler(w, r, &errData)
-			return
-		}
-		defer db.Close()
-
 		var usernameExists, emailExists bool
-		err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE username = ?)", username).Scan(&usernameExists)
+		err := strct.Db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE username = ?)", username).Scan(&usernameExists)
 		if err != nil {
 			log.Println("Failed to check if username exists")
 			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -67,7 +50,7 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE email = ?)", email).Scan(&emailExists)
+		err = strct.Db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE email = ?)", email).Scan(&emailExists)
 		if err != nil {
 			log.Println("Failed to check if email exists")
 			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -76,7 +59,7 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if usernameExists {
-			err := templates.ExecuteTemplate(w, "signup.html", map[string]string{
+			err := strct.Templates.ExecuteTemplate(w, "signup.html", map[string]string{
 				"ErrorMessage": "Username already exists",
 			})
 			if err != nil {
@@ -88,7 +71,7 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if emailExists {
-			err := templates.ExecuteTemplate(w, "signup.html", map[string]string{
+			err := strct.Templates.ExecuteTemplate(w, "signup.html", map[string]string{
 				"ErrorMessage": "Email already exists",
 			})
 			if err != nil {
@@ -101,7 +84,7 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 		password, _ = HashPassword(password)
 		defaultAvatar := "static/assets/default-avatar.png"
 		// Insert user data into the database
-		stmt, err := db.Prepare("INSERT INTO user (f_name, l_name, username, email, password, current_session, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)")
+		stmt, err := strct.Db.Prepare("INSERT INTO user (f_name, l_name, username, email, password, current_session, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)")
 		if err != nil {
 			log.Println("Failed to prepare insert statement:", err)
 			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -123,7 +106,7 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := templates.ExecuteTemplate(w, "signup.html", nil)
+	err := strct.Templates.ExecuteTemplate(w, "signup.html", nil)
 	if err != nil {
 		log.Println("Error rendering signup page:", err)
 		errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}

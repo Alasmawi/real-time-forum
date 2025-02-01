@@ -1,23 +1,12 @@
 package server
 
 import (
-	"database/sql"
 	strct "forum/structs"
-	"html/template"
 	"log"
 	"net/http"
-	"path/filepath"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
-
-var (
-	templates *template.Template
-)
-
-func init() {
-	templates = template.Must(template.ParseGlob(filepath.Join("templates", "*.html")))
-}
 
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
@@ -44,17 +33,7 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		errHandler(w, r, &err)
 		return
 	}
-
-	db, err := sql.Open("sqlite3", "./database/main.db")
-	if err != nil {
-		log.Println("Error opening database:", err)
-		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-		errHandler(w, r, &err)
-		return
-	}
-	defer db.Close()
-
-	_, err = db.Exec("DELETE FROM post WHERE post_id = ?", postID)
+	_, err := strct.Db.Exec("DELETE FROM post WHERE post_id = ?", postID)
 	if err != nil {
 		log.Println("Error deleting post:", err)
 		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}

@@ -13,22 +13,7 @@ import (
 
 const maxPostLength = 500
 
-func NewPostPage(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/newpost" {
-		log.Println("Invalid URL path")
-		err := strct.ErrorPageData{Code: "404", ErrorMsg: "PAGE NOT FOUND"}
-		errHandler(w, r, &err)
-	}
-
-	db, err := sql.Open("sqlite3", "./database/main.db")
-	if err != nil {
-		log.Println("Database connection failed")
-		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-		errHandler(w, r, &err)
-		return
-	}
-	defer db.Close()
-
+func CreatePage(w http.ResponseWriter, r *http.Request) {
 	// Fetch session cookie
 	seshCok, err := r.Cookie("session_token")
 	if err != nil {
@@ -42,7 +27,7 @@ func NewPostPage(w http.ResponseWriter, r *http.Request) {
 
 	var userID int
 	var userName string
-	err = db.QueryRow("SELECT user_id, username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
+	err = strct.Db.QueryRow("SELECT user_id, username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
 	if err != nil {
 		log.Println("Error fetching userid and username from user table:", err)
 		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -52,7 +37,7 @@ func NewPostPage(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		categories, err := fUtils.GetAllCategories(db)
+		categories, err := fUtils.GetAllCategories()
 		if err != nil {
 			log.Println("Failed to fetch categories")
 			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -80,7 +65,7 @@ func NewPostPage(w http.ResponseWriter, r *http.Request) {
 			SelectedTab:   "posts",
 		}
 
-		err = templates.ExecuteTemplate(w, "newpost.html", data)
+		err = strct.Templates.ExecuteTemplate(w, "create.html", data)
 		if err != nil {
 			log.Println("Error rendering new post page:", err)
 			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -89,7 +74,6 @@ func NewPostPage(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case "POST":
-
 		err := r.ParseMultipartForm(10 << 20)
 		if err != nil {
 			log.Println("Failed to parse form data")
@@ -129,7 +113,7 @@ func NewPostPage(w http.ResponseWriter, r *http.Request) {
 			image.Valid = false
 		}
 
-		postID, err := fUtils.InsertPost(db, content, image, userID)
+		postID, err := fUtils.InsertPost(content, image, userID)
 		if err != nil {
 			log.Println("Failed to insert new post")
 			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
@@ -144,13 +128,13 @@ func NewPostPage(w http.ResponseWriter, r *http.Request) {
 				log.Println("Invalid category ID")
 				continue
 			}
-			err = fUtils.InsertPostCategory(db, postID, categoryIDInt)
+			err = fUtils.InsertPostCategory(postID, categoryIDInt)
 			if err != nil {
 				log.Println("Failed to insert post category", err)
 			}
 		}
 
 		// Redirect to the home page after successful post
-		http.Redirect(w, r, "/home?tab=posts&filter=all", http.StatusSeeOther)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	}
 }

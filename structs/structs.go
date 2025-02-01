@@ -2,8 +2,32 @@ package structs
 
 import (
 	"database/sql"
+	"log"
+	"html/template"
+	"path/filepath"
 	"time"
 )
+
+var Db *sql.DB
+var Templates *template.Template
+
+func init() {
+	Templates = template.Must(template.ParseGlob(filepath.Join("templates", "*.html")))
+
+	var err error
+	Db, err = sql.Open("sqlite3", "./database/main.db")
+	if err != nil {
+		log.Println("Database connection failed")
+		log.Fatal(err)
+	}
+	// var err error
+	// Db, err = sql.Open("sqlite3", "./database/main.db")
+	// if err != nil {
+	// 	log.Println("Database connection failed")
+	// 	log.Fatal(err)
+	// }
+	// return
+}
 
 type ErrorPageData struct {
 	Code     string

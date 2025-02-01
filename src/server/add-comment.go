@@ -1,27 +1,13 @@
 package server
 
 import (
-	"database/sql"
+	strct "forum/structs"
 	"log"
 	"net/http"
 	"time"
 )
 
 func AddComment(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		log.Println("Method not allowed")
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	db, err := sql.Open("sqlite3", "./database/main.db")
-	if err != nil {
-		log.Println("Error opening database:", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
 	postID := r.FormValue("post_id")
 	userID := r.FormValue("user_id")
 	content := r.FormValue("content")
@@ -36,7 +22,7 @@ func AddComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Exec("INSERT INTO comment (content, comment_at, post_id, user_id) VALUES (?, ?, ?, ?)", content, time.Now(), postID, userID)
+	_, err := strct.Db.Exec("INSERT INTO comment (content, comment_at, post_id, user_id) VALUES (?, ?, ?, ?)", content, time.Now(), postID, userID)
 	if err != nil {
 		log.Println("Error inserting comment:", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
