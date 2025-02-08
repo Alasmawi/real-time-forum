@@ -17,18 +17,17 @@
 
 <body>
     <header>
-        <a href="/home?tab=posts&filter=all" class="logo-container">
+        <a href="/home" class="logo-container">
             <img src="/static/assets/logo.png" alt="ConnectHub Logo">
             <span>Connect</span><span>Hub</span>
         </a>
         <div class="user-actions">
-            <form action="/newpost" method="GET">
+            <form action="/create" method="GET">
                 <input type="hidden" name="user" value="{{.UserID}}">
                 <button type="submit" class="register">
                     <i class="fa-regular fa-square-plus"></i> New post
                 </button>
             </form>
-            
             <div class="dropdown">
                 <a class="dropdown-toggle dropbtn" href="#"><i class="fa-regular fa-bell"></i></a>
                 <div class="dropdown-content">
@@ -49,7 +48,11 @@
                     <p>No notifications yet</p>
                     {{end}}
                 </div>
-                <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                <form action="/logout" method="POST">
+                    <button type="submit" class="logout">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </form>
             </div>
         </div>
     </header>

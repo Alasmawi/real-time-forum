@@ -23,7 +23,7 @@ func ReverseMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			err = strct.Db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE current_session = ?)", seshVal).Scan(&exists)
 			if err != nil {
 				log.Println("Error :", err)
-				err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+				err := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 				errHandler(w, r, &err)
 				return
 			}

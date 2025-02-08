@@ -30,7 +30,7 @@ func init() {
 }
 
 type ErrorPageData struct {
-	Code     string
+	Code     int
 	ErrorMsg string
 }
 

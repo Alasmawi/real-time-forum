@@ -1,11 +1,12 @@
 package server
 
 import (
-	strct "reboot01.com/js/forum/structs"
 	"log"
 	"net/http"
+
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
+	strct "reboot01.com/js/forum/structs"
 )
 
 func HashPassword(password string) (string, error) {
@@ -21,7 +22,7 @@ func VerifyPassword(password, hash string) bool {
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		log.Println("Method not allowed")
-		err := strct.ErrorPageData{Code: "405", ErrorMsg: "METHOD NOT ALLOWED"}
+		err := strct.ErrorPageData{Code: http.StatusMethodNotAllowed, ErrorMsg: "METHOD NOT ALLOWED"}
 		errHandler(w, r, &err)
 		return
 	}
@@ -29,14 +30,14 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	postID := r.URL.Query().Get("id")
 	if postID == "" {
 		log.Println("Post ID is missing")
-		err := strct.ErrorPageData{Code: "400", ErrorMsg: "BAD REQUEST"}
+		err := strct.ErrorPageData{Code: http.StatusBadRequest, ErrorMsg: "BAD REQUEST"}
 		errHandler(w, r, &err)
 		return
 	}
 	_, err := strct.Db.Exec("DELETE FROM post WHERE post_id = ?", postID)
 	if err != nil {
 		log.Println("Error deleting post:", err)
-		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+		err := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 		errHandler(w, r, &err)
 		return
 	}

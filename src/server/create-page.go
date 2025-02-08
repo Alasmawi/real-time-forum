@@ -16,22 +16,17 @@ const maxPostLength = 500
 
 func CreatePage(w http.ResponseWriter, r *http.Request) {
 	// Fetch session cookie
-	seshCok, err := r.Cookie("session_token")
-	if err != nil {
-		http.Redirect(w, r, "/", http.StatusBadRequest)
-		fmt.Println("Error fetching session cookie")
-		return
-	}
+	seshCok, _ := r.Cookie("session_token")
 
 	// Set session token from cookie value
 	seshVal := seshCok.Value
 
 	var userID int
 	var userName string
-	err = strct.Db.QueryRow("SELECT user_id, username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
+	err := strct.Db.QueryRow("SELECT user_id, username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
 	if err != nil {
 		log.Println("Error fetching userid and username from user table:", err)
-		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+		err := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 		errHandler(w, r, &err)
 		return
 	}
@@ -41,7 +36,7 @@ func CreatePage(w http.ResponseWriter, r *http.Request) {
 		categories, err := fUtils.GetAllCategories()
 		if err != nil {
 			log.Println("Failed to fetch categories")
-			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			err := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &err)
 			return
 		}
@@ -69,7 +64,7 @@ func CreatePage(w http.ResponseWriter, r *http.Request) {
 		err = strct.Templates.ExecuteTemplate(w, "create.html", data)
 		if err != nil {
 			log.Println("Error rendering new post page:", err)
-			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			err := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &err)
 			return
 		}
@@ -78,7 +73,7 @@ func CreatePage(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseMultipartForm(10 << 20)
 		if err != nil {
 			log.Println("Failed to parse form data")
-			err := strct.ErrorPageData{Code: "400", ErrorMsg: "BAD REQUEST"}
+			err := strct.ErrorPageData{Code: http.StatusBadRequest, ErrorMsg: "BAD REQUEST"}
 			errHandler(w, r, &err)
 			return
 		}
@@ -88,7 +83,7 @@ func CreatePage(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(userID, content)
 		if userID == "" || content == "" {
 			log.Println("Invalid form data")
-			err := strct.ErrorPageData{Code: "400", ErrorMsg: "BAD REQUEST"}
+			err := strct.ErrorPageData{Code: http.StatusBadRequest, ErrorMsg: "BAD REQUEST"}
 			errHandler(w, r, &err)
 			return
 		}
@@ -117,7 +112,7 @@ func CreatePage(w http.ResponseWriter, r *http.Request) {
 		postID, err := fUtils.InsertPost(content, image, userID)
 		if err != nil {
 			log.Println("Failed to insert new post")
-			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			err := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &err)
 			return
 		}
@@ -134,8 +129,16 @@ func CreatePage(w http.ResponseWriter, r *http.Request) {
 				log.Println("Failed to insert post category", err)
 			}
 		}
-
+		// w.WriteHeader(http.StatusCreated)
 		// Redirect to the home page after successful post
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
+
+	case http.MethodOptions:
+		w.Header().Set("Allow", "GET, POST, OPTIONS")
+		w.WriteHeader(http.StatusNoContent)
+
+	default:
+		w.Header().Set("Allow", "GET, POST, OPTIONS")
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
 }

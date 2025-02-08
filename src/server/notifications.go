@@ -12,7 +12,7 @@ func NotificationsPage(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.Atoi(r.FormValue("user"))
 	if err != nil {
 		log.Println("Error converting userID to int:", err)
-		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+		err := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 		errHandler(w, r, &err)
 		return
 	}
@@ -30,7 +30,7 @@ func NotificationsPage(w http.ResponseWriter, r *http.Request) {
 	err = strct.Templates.ExecuteTemplate(w, "notifications.html", data)
 	if err != nil {
 		log.Println("Error rendering notifications page:", err)
-		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+		err := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 		errHandler(w, r, &err)
 		return
 	}

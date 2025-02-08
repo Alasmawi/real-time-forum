@@ -27,7 +27,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 	err = strct.Db.QueryRow("SELECT user_id, username FROM user WHERE current_session = ?", seshVal).Scan(&userID, &userName)
 	if err != nil {
 		log.Println("Error fetching userid and username from user table:", err)
-		err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+		err := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 		errHandler(w, r, &err)
 		return
 	}
@@ -48,8 +48,8 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
         WHERE post.post_id = ?
 		`, postID).Scan(&post.PostID, &post.Image, &post.Content, &post.PostAt, &post.UserUserID, &post.Username, &post.FirstName, &post.LastName, &post.Avatar, &post.Comments)
 	if err != nil {
-		log.Println("Failed to fetch posts")
-		errData := strct.ErrorPageData{Code: "400", ErrorMsg: "BAD REQUEST"}
+		log.Println("Failed to fetch posts", err)
+		errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "BAD REQUEST"}
 		errHandler(w, r, &errData)
 		return
 	}
@@ -60,6 +60,7 @@ func PostPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
+
 	comments, err := fUtils.GetCommentsForPost(postIDInt)
 	if err != nil {
 		log.Println("Error getting comments for post:", err)

@@ -2,18 +2,28 @@ package server
 
 import (
 	"database/sql"
-	uuid "reboot01.com/js/forum/src/uuid"
-	strct "reboot01.com/js/forum/structs"
 	"log"
 	"net/http"
 	"time"
+
+	uuid "reboot01.com/js/forum/src/uuid"
+	strct "reboot01.com/js/forum/structs"
 )
 
 func LoginPage(w http.ResponseWriter, r *http.Request) {
-	email := r.FormValue("email")
-	password := r.FormValue("password")
+	switch r.Method {
+	case http.MethodGet:
+		err := strct.Templates.ExecuteTemplate(w, "index.html", nil)
+		if err != nil {
+			log.Println("Error rendering login page:", err)
+			errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
+			errHandler(w, r, &errData)
+		}
 
-	if r.Method == "POST" {
+	case http.MethodPost:
+		email := r.FormValue("email")
+		password := r.FormValue("password")
+
 		var userID int
 		var dbPassword, userName string
 		err := strct.Db.QueryRow("SELECT user_id, password, username FROM user WHERE email = ?", email).Scan(&userID, &dbPassword, &userName)
@@ -25,13 +35,13 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 				})
 				if err != nil {
 					log.Println("Error rendering login page:", err)
-					errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+					errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 					errHandler(w, r, &errData)
 				}
 				return
 			}
 			log.Println("Failed to fetch user data")
-			err := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			err := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &err)
 			return
 		}
@@ -42,7 +52,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 			})
 			if err != nil {
 				log.Println("Error rendering login page:", err)
-				errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+				errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 				errHandler(w, r, &errData)
 			}
 			return
@@ -52,7 +62,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 		sessionToken, err := uuid.GenerateToken()
 		if err != nil {
 			log.Println("Error generating UUID:", err)
-			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &errData)
 		}
 
@@ -70,7 +80,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 		result, err := strct.Db.Exec("UPDATE session SET session_id = ? WHERE user_id = ?", stringToken, userID)
 		if err != nil {
 			log.Println("Error updating session ID in session table:", err)
-			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &errData)
 			return
 		} else if rowsAffected, err := result.RowsAffected(); err == nil && rowsAffected == 0 { //only insert a new row if no record is updated (i.e., no session is found)
@@ -78,7 +88,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 				stringToken, userID, time.Now().Add(1*time.Hour))
 			if err != nil {
 				log.Println("Error creating new session:", err)
-				errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+				errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 				errHandler(w, r, &errData)
 				return
 			}
@@ -88,7 +98,7 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 		_, err = strct.Db.Exec("UPDATE user SET current_session = ? WHERE user_id = ?", stringToken, userID)
 		if err != nil {
 			log.Println("Error updating session ID in user table:", err)
-			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &errData)
 			return
 		}
@@ -97,12 +107,14 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 
 		log.Println("Redirecting to home page")
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
-	}
 
-	err := strct.Templates.ExecuteTemplate(w, "index.html", nil)
-	if err != nil {
-		log.Println("Error rendering login page:", err)
-		errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+	case http.MethodOptions:
+		w.Header().Set("Allow", "GET, POST, OPTIONS")
+		w.WriteHeader(http.StatusNoContent)
+
+	default:
+		w.Header().Set("Allow", "GET, POST, OPTIONS")
+		errData := strct.ErrorPageData{Code: http.StatusMethodNotAllowed, ErrorMsg: "METHOD NOT ALLOWED"}
 		errHandler(w, r, &errData)
 	}
 }

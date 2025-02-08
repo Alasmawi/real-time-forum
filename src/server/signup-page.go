@@ -9,7 +9,15 @@ import (
 )
 
 func SignupPage(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
+	switch r.Method {
+	case http.MethodGet:
+		err := strct.Templates.ExecuteTemplate(w, "signup.html", nil)
+		if err != nil {
+			log.Println("Error rendering signup page:", err)
+			errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
+			errHandler(w, r, &errData)
+		}
+	case http.MethodPost:
 		F_name := r.FormValue("first_name")
 		L_name := r.FormValue("last_name")
 		username := r.FormValue("username")
@@ -18,13 +26,14 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 		confirmPassword := r.FormValue("confirm-password")
 
 		emailRegex := regexp.MustCompile(`^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$`)
+
 		if !emailRegex.MatchString(email) {
 			err := strct.Templates.ExecuteTemplate(w, "signup.html", map[string]string{
 				"ErrorMessage": "Invalid email format",
 			})
 			if err != nil {
 				log.Println("Error rendering signup page:", err)
-				errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+				errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 				errHandler(w, r, &errData)
 			}
 			return
@@ -36,7 +45,7 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 			})
 			if err != nil {
 				log.Println("Error rendering signup page:", err)
-				errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+				errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 				errHandler(w, r, &errData)
 			}
 			return
@@ -46,7 +55,7 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 		err := strct.Db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE username = ?)", username).Scan(&usernameExists)
 		if err != nil {
 			log.Println("Failed to check if username exists")
-			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &errData)
 			return
 		}
@@ -54,7 +63,7 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 		err = strct.Db.QueryRow("SELECT EXISTS(SELECT 1 FROM user WHERE email = ?)", email).Scan(&emailExists)
 		if err != nil {
 			log.Println("Failed to check if email exists")
-			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &errData)
 			return
 		}
@@ -65,7 +74,7 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 			})
 			if err != nil {
 				log.Println("Error rendering signup page:", err)
-				errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+				errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 				errHandler(w, r, &errData)
 			}
 			return
@@ -77,18 +86,19 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 			})
 			if err != nil {
 				log.Println("Error rendering signup page:", err)
-				errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+				errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 				errHandler(w, r, &errData)
 			}
 			return
 		}
+
 		password, _ = HashPassword(password)
 		defaultAvatar := "static/assets/default-avatar.png"
 		// Insert user data into the database
 		stmt, err := strct.Db.Prepare("INSERT INTO user (f_name, l_name, username, email, password, current_session, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)")
 		if err != nil {
 			log.Println("Failed to prepare insert statement:", err)
-			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &errData)
 			return
 		}
@@ -97,7 +107,7 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 		_, err = stmt.Exec(F_name, L_name, username, email, password, "", defaultAvatar)
 		if err != nil {
 			log.Println("Failed to insert user data:", err)
-			errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+			errData := strct.ErrorPageData{Code: http.StatusInternalServerError, ErrorMsg: "INTERNAL SERVER ERROR"}
 			errHandler(w, r, &errData)
 			return
 		}
@@ -105,12 +115,14 @@ func SignupPage(w http.ResponseWriter, r *http.Request) {
 		// Redirect to login page or show success message
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
-	}
 
-	err := strct.Templates.ExecuteTemplate(w, "signup.html", nil)
-	if err != nil {
-		log.Println("Error rendering signup page:", err)
-		errData := strct.ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+	case http.MethodOptions:
+		w.Header().Set("Allow", "GET, POST, OPTIONS")
+		w.WriteHeader(http.StatusNoContent)
+
+	default:
+		w.Header().Set("Allow", "GET, POST, OPTIONS")
+		errData := strct.ErrorPageData{Code: http.StatusMethodNotAllowed, ErrorMsg: "METHOD NOT ALLOWED"}
 		errHandler(w, r, &errData)
 	}
 }

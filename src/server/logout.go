@@ -28,5 +28,6 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	// http.Redirect(w, r, "/", http.StatusUnauthorized)
+	http.Redirect(w, r, "/", http.StatusFound)
 }
