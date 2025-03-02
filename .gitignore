@@ -4,3 +4,5 @@ tmp/
 build-errors.log
 README.html
 README2.md
+Makefile
+LICENSE2
