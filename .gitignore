@@ -2,6 +2,3 @@ db.sqlite
 bin/
 tmp/
 build-errors.log
-README.html
-README2.md
-Makefile

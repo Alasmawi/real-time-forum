@@ -1,10 +1,10 @@
-package main
+package api
 
 import (
 	"net/http"
 )
 
-func (app *application) routes() http.Handler {
+func (app *Application) routes() http.Handler {
 	mux := http.NewServeMux()
 	// fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/", http.FileServer(http.Dir("./static")))

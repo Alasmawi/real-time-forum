@@ -1,15 +1,15 @@
-package main
+package api
 
 import (
 	"fmt"
 	"net/http"
 )
 
-func (app *application) backgroundTask(r *http.Request, fn func() error) {
-	app.wg.Add(1)
+func (app *Application) backgroundTask(r *http.Request, fn func() error) {
+	app.WG.Add(1)
 
 	go func() {
-		defer app.wg.Done()
+		defer app.WG.Done()
 
 		defer func() {
 			err := recover()

@@ -21,7 +21,7 @@ func JSONWithHeaders(w http.ResponseWriter, status int, data any, headers http.H
 		w.Header()[key] = value
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "Application/json")
 	w.WriteHeader(status)
 	w.Write(js)
 

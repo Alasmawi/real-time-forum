@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"net/http"
@@ -9,11 +9,10 @@ import (
 	"reboot01.com/js/forum/internal/request"
 	"reboot01.com/js/forum/internal/response"
 	"reboot01.com/js/forum/internal/validator"
-
 	// "github.com/pascaldekloe/jwt"
 )
 
-func (app *application) status(w http.ResponseWriter, r *http.Request) {
+func (app *Application) status(w http.ResponseWriter, r *http.Request) {
 	data := map[string]string{
 		"Status": "OK",
 	}
@@ -24,7 +23,7 @@ func (app *application) status(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
+func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Email     string              `json:"Email"`
 		Password  string              `json:"Password"`
@@ -37,7 +36,7 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, found, err := app.db.GetUserByEmail(input.Email)
+	_, found, err := app.DB.GetUserByEmail(input.Email)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -63,7 +62,7 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = app.db.InsertUser(input.Email, hashedPassword)
+	_, err = app.DB.InsertUser(input.Email, hashedPassword)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -72,7 +71,7 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (app *application) createAuthenticationToken(w http.ResponseWriter, r *http.Request) {
+func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Email     string              `json:"Email"`
 		Password  string              `json:"Password"`
@@ -85,7 +84,7 @@ func (app *application) createAuthenticationToken(w http.ResponseWriter, r *http
 		return
 	}
 
-	user, found, err := app.db.GetUserByEmail(input.Email)
+	user, found, err := app.DB.GetUserByEmail(input.Email)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -140,6 +139,6 @@ func (app *application) createAuthenticationToken(w http.ResponseWriter, r *http
 	}
 }
 
-func (app *application) protected(w http.ResponseWriter, r *http.Request) {
+func (app *Application) protected(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("This is a protected handler"))
 }

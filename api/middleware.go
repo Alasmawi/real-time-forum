@@ -1,20 +1,20 @@
-package main
+package api
 
 import (
 	"fmt"
 	"log/slog"
 	"net/http"
+
 	// "strconv"
 	// "strings"
 	// "time"
 
 	"reboot01.com/js/forum/internal/response"
-
 	// "github.com/pascaldekloe/jwt"
 	// "github.com/tomasen/realip"
 )
 
-func (app *application) recoverPanic(next http.Handler) http.Handler {
+func (app *Application) recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			err := recover()
@@ -27,7 +27,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) logAccess(next http.Handler) http.Handler {
+func (app *Application) logAccess(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mw := response.NewMetricsResponseWriter(w)
 		next.ServeHTTP(mw, r)
@@ -43,12 +43,12 @@ func (app *application) logAccess(next http.Handler) http.Handler {
 		requestAttrs := slog.Group("request", "method", method, "url", url, "proto", proto)
 		responseAttrs := slog.Group("repsonse", "status", mw.StatusCode, "size", mw.BytesCount)
 
-		app.logger.Info("access", userAttrs, requestAttrs, responseAttrs)
+		app.Logger.Info("access", userAttrs, requestAttrs, responseAttrs)
 	})
 }
 
-//authentication middleware
-func (app *application) authenticate(next http.Handler) http.Handler {
+// authentication middleware
+func (app *Application) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// w.Header().Add("Vary", "Authorization")
 
@@ -103,7 +103,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) requireAuthenticatedUser(next http.Handler) http.Handler {
+func (app *Application) requireAuthenticatedUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authenticatedUser := contextGetAuthenticatedUser(r)
 
