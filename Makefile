@@ -47,7 +47,7 @@ tidy:
 ## build: build the cmd/api application
 .PHONY: build
 build:
-	go build -o=/tmp/bin/api ./cmd/api
+	go build -o=/tmp/bin/api ./main.go
 	
 ## run: run the cmd/api application
 .PHONY: run

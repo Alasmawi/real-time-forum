@@ -27,7 +27,7 @@ func main() {
 func run(logger *slog.Logger) error {
 	var cfg api.Config
 
-	cfg.BaseURL = env.GetString("BASE_URL", "http://localhost:4444")
+	cfg.BaseURL = env.GetString("BASE_URL", "http://localhost:8080")
 	cfg.HttpPort = env.GetInt("HTTP_PORT", 8080)
 	cfg.DB.DSN = env.GetString("DB_DSN", "db.sqlite")
 	// cfg.db.automigrate = env.GetBool("DB_AUTOMIGRATE", true)
