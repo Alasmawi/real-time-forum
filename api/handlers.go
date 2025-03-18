@@ -12,6 +12,10 @@ import (
 	// "github.com/pascaldekloe/jwt"
 )
 
+// func (app *Application) serverIndex() http.Handler {
+
+// }
+
 func (app *Application) status(w http.ResponseWriter, r *http.Request) {
 	data := map[string]string{
 		"Status": "OK",
