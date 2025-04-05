@@ -1,7 +1,7 @@
 function Navigate(page) {
 	let container = document.getElementById("content");
 	
-	fetch("/html/" + page + ".html")
+	fetch("../html/" + page + ".html")
 		.then(response => response.text())
 		.then(html => {
 			container.innerHTML = html;
