@@ -1,6 +1,11 @@
 package response
 
-import "net/http"
+import (
+	"bufio"
+	"fmt"
+	"net"
+	"net/http"
+)
 
 type MetricsResponseWriter struct {
 	StatusCode    int
@@ -39,4 +44,12 @@ func (mw *MetricsResponseWriter) Write(b []byte) (int, error) {
 
 func (mw *MetricsResponseWriter) Unwrap() http.ResponseWriter {
 	return mw.wrapped
+}
+
+func (mw *MetricsResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hijacker, ok := mw.wrapped.(http.Hijacker)
+	if !ok {
+		return nil, nil, fmt.Errorf("underlying response writer does not implement http.Hijacker")
+	}
+	return hijacker.Hijack()
 }
