@@ -29,8 +29,11 @@ func (app *Application) status(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 	var input struct {
+		Username  string              `json:"Username"`
 		Email     string              `json:"Email"`
 		Password  string              `json:"Password"`
+		Age       string              `json:"Age"`
+		Sex       string              `json:"Sex"`
 		Validator validator.Validator `json:"-"`
 	}
 
@@ -45,6 +48,10 @@ func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 		return
 	}
+
+	input.Validator.CheckField(input.Email != "", "Email", "Email is required")
+	input.Validator.CheckField(validator.Matches(input.Email, validator.RgxEmail), "Email", "Must be a valid email address")
+	input.Validator.CheckField(!found, "Email", "Email is already in use")
 
 	input.Validator.CheckField(input.Email != "", "Email", "Email is required")
 	input.Validator.CheckField(validator.Matches(input.Email, validator.RgxEmail), "Email", "Must be a valid email address")

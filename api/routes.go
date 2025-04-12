@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+
 	ws "reboot01.com/js/forum/internal/websocket"
 )
 
@@ -17,6 +18,7 @@ func (app *Application) routes() http.Handler {
 	// mux.HandleFunc("GET /", app.serveIndex)
 	mux.HandleFunc("GET /status", app.status)
 	mux.HandleFunc("POST /users", app.createUser)
+	mux.HandleFunc("GET /user-register", app.createUser)
 	mux.HandleFunc("POST /authentication-tokens", app.createAuthenticationToken)
 	mux.HandleFunc("GET /ws", websocketManager.ServeWebSocket)
 

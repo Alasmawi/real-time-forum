@@ -14,12 +14,7 @@ function Navigate(page) {
 					chatFunctionality();
 					break;
 
-				case "home":
-					console.log("Home page loaded.");
-					break;
-
-				case "about":
-					console.log("About page loaded.");
+				case "login":
 					break;
 
 				default:
