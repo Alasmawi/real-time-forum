@@ -30,6 +30,9 @@ type Client struct {
 
 	// Egress is used to avoid concurrent writes on the WebSocket
 	egress chan Event
+
+	// chatroom is used to know what room user is in
+	chatroom string
 }
 
 // Initializes a new c with all required values.

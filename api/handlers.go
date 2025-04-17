@@ -153,8 +153,3 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 func (app *Application) protected(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("This is a protected handler"))
 }
-
-func (app *Application) rerout(w http.ResponseWriter, r *http.Request) {
-	fileServer := http.FileServer(http.Dir("./static/html"))
-	fileServer.ServeHTTP(w, r)
-}

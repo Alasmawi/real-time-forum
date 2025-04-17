@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
@@ -39,6 +40,11 @@ type Application struct {
 	DB     *database.DB
 	Logger *slog.Logger
 	WG     sync.WaitGroup
+}
+
+// neuteredFileSystem is a cusom type which embeds the standard http.FileSystem.
+type neuteredFileSystem struct {
+	fs http.FileSystem
 }
 
 const (
@@ -87,4 +93,33 @@ func (app *Application) ServeHTTP() error {
 
 	app.WG.Wait()
 	return nil
+}
+
+// Open checks the requested file path and determines whether it is a directory or not.
+// If it is a directory, it attempts to open an index.html file in it.
+func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
+	f, err := nfs.fs.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	s, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	if s.IsDir() {
+		index := filepath.Join(path, "index.html")
+		if _, err := nfs.fs.Open(index); err != nil {
+			// Closes the original file to avoid a file descriptor leak
+			closeErr := f.Close()
+			if closeErr != nil {
+				return nil, closeErr
+			}
+
+			return nil, err
+		}
+	}
+
+	return f, nil
 }

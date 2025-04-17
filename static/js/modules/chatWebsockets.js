@@ -21,6 +21,35 @@ class Event {
 }
 
 /**
+* SendMessageEvent is used to send messages to other clients
+**/
+class SendMessageEvent {
+    constructor(message, from) {
+        this.message = message;
+        this.from = from;
+    }
+}
+/**
+* NewMessageEvent is messages comming from clients
+**/
+class NewMessageEvent {
+    constructor(message, from, sent) {
+        this.message = message;
+        this.from = from;
+        this.sent = sent;
+    }
+}
+
+/**
+* ChangeChatRoomEvent is used to switch chatroom
+**/
+class ChangeChatRoomEvent {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+/**
 * routeEvent is a proxy function that routes
 * events into their correct Handler
 * based on the type field
@@ -32,7 +61,9 @@ function routeEvent(event) {
     }
     switch (event.type) {
         case "new_message":
-            console.log("new message");
+            // Format payload
+            const messageEvent = Object.assign(new NewMessageEvent, event.payload);
+            appendChatMessage(messageEvent);
             break;
         default:
             alert("unsupported message type");
@@ -48,18 +79,39 @@ function changeChatRoom() {
     // Change Header to reflect the Changed chatroom
     var newchat = document.getElementById("chatroom");
     if (newchat != null && newchat.value != selectedchat) {
-        console.log(newchat);
+        selectedchat = newchat.value;
+
+        let header = document.getElementById("chat-header");
+        header.innerHTML = "Currently in chat: " + selectedchat;
+
+        let changeEvent = new ChangeChatRoomEvent(selectedchat);
+        sendEvent("change_room", changeEvent);
+        
+        let textarea = document.getElementById("chatmessages");
+        textarea.innerHTML = `You changed room into: ${selectedchat}`;
     }
     return false;
 }
 
+// /**
+//  * Sends a new message onto the Websocket
+//  **/
+// function sendMessage() {
+//     var newmessage = document.getElementById("message");
+//     if (newmessage != null) {
+//         sendEvent("send_message", newmessage.value)
+//     }
+//     return false;
+// }
+
 /**
- * Sends a new message onto the Websocket
- **/
+* sendMessage will send a new message onto the Chat
+**/
 function sendMessage() {
     var newmessage = document.getElementById("message");
     if (newmessage != null) {
-        sendEvent("send_message", newmessage.value)
+        let outgoingEvent = new SendMessageEvent(newmessage.value, "percy");
+        sendEvent("send_message", outgoingEvent)
     }
     return false;
 }
@@ -69,11 +121,24 @@ function sendMessage() {
 * eventname - the event name to send on
 * payload - the data payload
 **/
- function sendEvent(eventName, payload) {
+function sendEvent(eventName, payload) {
     // Create a event Object with a event named send_message
     const event = new Event(eventName, payload);
     // Format as JSON and send
     conn.send(JSON.stringify(event));
+}
+
+/**
+* appendChatMessage takes in new messages and adds them to the chat
+**/
+function appendChatMessage(messageEvent) {
+    var date = new Date(messageEvent.sent);
+    // format message
+    const formattedMsg = `${date.toLocaleString()}: ${messageEvent.message}`;
+    // Append Message
+    let textarea = document.getElementById("chatmessages");
+    textarea.innerHTML = textarea.innerHTML + "\n" + formattedMsg;
+    textarea.scrollTop = textarea.scrollHeight;
 }
 
 /**
