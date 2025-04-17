@@ -5,6 +5,7 @@ import (
 	// "strconv"
 	// "time"
 
+	"reboot01.com/js/forum/internal/database"
 	"reboot01.com/js/forum/internal/password"
 	"reboot01.com/js/forum/internal/request"
 	"reboot01.com/js/forum/internal/response"
@@ -29,12 +30,12 @@ func (app *Application) status(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Username  string              `json:"Username"`
-		Email     string              `json:"Email"`
-		Password  string              `json:"Password"`
-		Age       string              `json:"Age"`
-		Sex       string              `json:"Sex"`
-		Validator validator.Validator `json:"-"`
+		Username   string              `json:"Username"`
+		Identifier string              `json:"Identifier"`
+		Password   string              `json:"Password"`
+		Age        string              `json:"Age"`
+		Sex        string              `json:"Sex"`
+		Validator  validator.Validator `json:"-"`
 	}
 
 	err := request.DecodeJSON(w, r, &input)
@@ -43,19 +44,19 @@ func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, found, err := app.DB.GetUserByEmail(input.Email)
+	_, found, err := app.DB.GetUserByEmail(input.Identifier)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
 	}
 
-	input.Validator.CheckField(input.Email != "", "Email", "Email is required")
-	input.Validator.CheckField(validator.Matches(input.Email, validator.RgxEmail), "Email", "Must be a valid email address")
-	input.Validator.CheckField(!found, "Email", "Email is already in use")
+	input.Validator.CheckField(input.Identifier != "", "Identifier", "Identifier is required")
+	input.Validator.CheckField(validator.Matches(input.Identifier, validator.RgxEmail), "Identifier", "Must be a valid email address")
+	input.Validator.CheckField(!found, "Identifier", "Identifier is already in use")
 
-	input.Validator.CheckField(input.Email != "", "Email", "Email is required")
-	input.Validator.CheckField(validator.Matches(input.Email, validator.RgxEmail), "Email", "Must be a valid email address")
-	input.Validator.CheckField(!found, "Email", "Email is already in use")
+	input.Validator.CheckField(input.Identifier != "", "Identifier", "Identifier is required")
+	input.Validator.CheckField(validator.Matches(input.Identifier, validator.RgxEmail), "Identifier", "Must be a valid email address")
+	input.Validator.CheckField(!found, "Identifier", "Identifier is already in use")
 
 	input.Validator.CheckField(input.Password != "", "Password", "Password is required")
 	input.Validator.CheckField(len(input.Password) >= 8, "Password", "Password is too short")
@@ -73,7 +74,7 @@ func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = app.DB.InsertUser(input.Email, hashedPassword)
+	_, err = app.DB.InsertUser(input.Identifier, hashedPassword)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -84,9 +85,9 @@ func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Email     string              `json:"Email"`
-		Password  string              `json:"Password"`
-		Validator validator.Validator `json:"-"`
+		Identifier string              `json:"Identifier"`
+		Password   string              `json:"Password"`
+		Validator  validator.Validator `json:"-"`
 	}
 
 	err := request.DecodeJSON(w, r, &input)
@@ -95,14 +96,26 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 		return
 	}
 
-	user, found, err := app.DB.GetUserByEmail(input.Email)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
+	var user *database.User
+	var found bool
 
-	input.Validator.CheckField(input.Email != "", "Email", "Email is required")
-	input.Validator.CheckField(found, "Email", "Email address could not be found")
+	input.Validator.CheckField(input.Identifier != "", "Identifier", "Identifier is required")
+	input.Validator.CheckField(found, "Identifier", "Identifier address could not be found")
+
+	if validator.IsEmail(input.Identifier) {
+		user, found, err = app.DB.GetUserByEmail(input.Identifier)
+		if err != nil {
+			app.serverError(w, r, err)
+			return
+		}
+	} else {
+		user, found, err = app.DB.GetUserByUsername(input.Identifier)
+		if err != nil {
+			app.serverError(w, r, err)
+			return
+		}
+
+	}
 
 	if found {
 		passwordMatches, err := password.Matches(input.Password, user.HashedPassword)
@@ -119,6 +132,8 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 		app.failedValidation(w, r, input.Validator)
 		return
 	}
+
+	
 
 	// var claims jwt.Claims
 	// claims.Subject = strconv.Itoa(user.ID)

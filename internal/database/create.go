@@ -35,7 +35,6 @@ func (db DB) Create() {
 	const CreatePostTable = `
 		CREATE TABLE IF NOT EXISTS post (
 			post_id INTEGER PRIMARY KEY AUTOINCREMENT,
-			image TEXT NULL,
 			content TEXT NULL,
 			post_at DATETIME NOT NULL,
 			user_id INTEGER NOT NULL,
@@ -69,7 +68,6 @@ func (db DB) Create() {
 			email TEXT NOT NULL,
 			password TEXT NOT NULL,
 			current_session TEXT,
-			avatar TEXT,
 			FOREIGN KEY (current_session) REFERENCES session(session_id)
 		);
 		`
@@ -115,7 +113,7 @@ func (db DB) Create() {
 	}
 
 	insertUsers := []string{
-		`INSERT INTO user (f_name, l_name, username, email, password, current_session, avatar) VALUES ('Alicia', 'Nguyen', 'aliceN', 'aliceN@example.com', '123', 1, 'https://randomuser.me/api/portraits/women/1.jpg');`,
+		`INSERT INTO user (f_name, l_name, username, email, password, current_session) VALUES ('Alicia', 'Nguyen', 'aliceN', 'aliceN@example.com', '123', 1');`,
 	}
 
 	allInserts := [][]string{

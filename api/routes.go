@@ -19,6 +19,7 @@ func (app *Application) routes() http.Handler {
 	mux.HandleFunc("GET /user-register", app.createUser)
 	mux.HandleFunc("POST /authentication-tokens", app.createAuthenticationToken)
 	mux.HandleFunc("GET /ws", websocketManager.ServeWebSocket)
+	mux.HandleFunc("GET /home", app.homeHandler)
 
 	mux.Handle("GET /protected", app.requireAuthenticatedUser(http.HandlerFunc(app.protected)))
 

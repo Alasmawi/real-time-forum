@@ -7,20 +7,19 @@ import (
 )
 
 type Category struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID   int    `db:"id"`
+	Name string `db:"name"`
 }
 
 type Post struct {
-	UserID     int            `json:"user_id"`
-	Username   string         `json:"username"`
-	FirstName  string         `json:"first_name"`
-	LastName   string         `json:"last_name"`
-	Avatar     sql.NullString `json:"avatar"`
-	Likes      int            `json:"likes"`
-	Dislikes   int            `json:"dislikes"`
-	Comments   int            `json:"comments"`
-	Categories []Category     `json:"categories"`
+	UserID     int            `db:"user_id"`
+	Username   string         `db:"username"`
+	FirstName  string         `db:"first_name"`
+	LastName   string         `db:"last_name"`
+	Likes      int            `db:"likes"`
+	Dislikes   int            `db:"dislikes"`
+	Comments   int            `db:"comments"`
+	Categories []Category     `db:"categories"`
 }
 
 func (db *DB) GetAllCategories() ([]Category, error) {
@@ -64,7 +63,7 @@ func (db *DB) GetPostByID(postID int) (*Post, error) {
 
 	var post Post
 
-	query := `SELECT p.user_id, p.username, p.first_name, p.last_name, p.avatar, p.likes, p.dislikes, p.comments
+	query := `SELECT p.user_id, p.username, p.first_name, p.last_name, p.likes, p.dislikes, p.comments
               FROM post p
               WHERE p.id = $1`
 

@@ -2,22 +2,20 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"time"
 )
 
 type Comment struct {
-	ID        int            `json:"id"`
-	PostID    int            `json:"post_id"`
-	UserID    int            `json:"user_id"`
-	FirstName string         `json:"first_name"`
-	LastName  string         `json:"last_name"`
-	Username  string         `json:"username"`
-	Content   string         `json:"content"`
-	CreatedAt time.Time      `json:"created_at"`
-	Avatar    sql.NullString `json:"avatar"`
-	Likes     int            `json:"likes"`
-	Dislikes  int            `json:"dislikes"`
+	ID        int       `db:"comment_id"`
+	PostID    int       `db:"post_id"`
+	UserID    int       `db:"user_id"`
+	FirstName string    `db:"first_name"`
+	LastName  string    `db:"last_name"`
+	Username  string    `db:"username"`
+	Content   string    `db:"content"`
+	CreatedAt time.Time `db:"created_at"`
+	Likes     int       `db:"likes"`
+	Dislikes  int       `db:"dislikes"`
 }
 
 func (db DB) InsertComment(postID, userID int, content string) (int, error) {
@@ -41,14 +39,13 @@ func (db DB) InsertComment(postID, userID int, content string) (int, error) {
 	return int(id), err
 }
 
-
 func (db *DB) GetCommentsForPost(postID int) ([]Comment, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	var comments []Comment
 
-	query := `SELECT c.comment_id, c.post_id, c.user_id, u.first_name, u.last_name, u.username, c.content, c.created_at, u.avatar, c.likes, c.dislikes
+	query := `SELECT c.comment_id, c.post_id, c.user_id, u.first_name, u.last_name, u.username, c.content, c.created_at, c.likes, c.dislikes
 			  FROM comment c
 			  JOIN users u ON c.user_id = u.user_id
 			  WHERE c.post_id = $1`
@@ -60,4 +57,3 @@ func (db *DB) GetCommentsForPost(postID int) ([]Comment, error) {
 
 	return comments, nil
 }
-
