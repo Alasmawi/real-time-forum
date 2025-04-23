@@ -1,0 +1,48 @@
+import AbstractView from "./AbstarctView";
+import { chatFunctionality } from "../modules/chatWebsockets";
+
+export default class ChatroomView extends AbstractView {
+    constructor() {
+        super();
+        this.setTitle("Chatroom");
+    }
+
+    async getHtml() {
+        return `
+        <div class="center">
+            <h1>Amazing Chat Application</h1>
+            <h3 id="chat-header">Currently in chat: general</h3>
+
+            <!--
+            Here is a form that allows us to select what Chatroom to be in
+            -->
+            <form id="chatroom-selection">
+                <label for="chatroom">Chatroom:</label>
+                <input type="text" id="chatroom" name="chatroom"><br><br>
+                <input type="submit" value="Change chatroom">
+            </form>
+
+            <br>
+            <!--
+            Textarea to show messages from users
+            -->
+            <textarea class="messagearea" id="chatmessages" readonly name="chatmessages" rows="4" cols="50"
+                placeholder="Welcome to the general chatroom, here messages from others will appear"></textarea>
+
+            <br>
+            <!--
+            Chatroom-message form is used to send messages
+            -->
+            <form id="chatroom-message">
+                <label for="message">Message:</label>
+                <input type="text" id="message" name="message"><br><br>
+                <input type="submit" value="Send message">
+            </form> 
+        </div>
+        `;
+    }
+
+    async getData() {
+        chatFunctionality();
+    }
+}

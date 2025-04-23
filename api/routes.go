@@ -15,9 +15,8 @@ func (app *Application) routes() http.Handler {
 	websocketManager := ws.NewWebsocketManager()
 
 	mux.HandleFunc("GET /status", app.status)
-	mux.HandleFunc("POST /users", app.createUser)
-	mux.HandleFunc("GET /user-register", app.createUser)
-	mux.HandleFunc("POST /authentication-tokens", app.createAuthenticationToken)
+	mux.HandleFunc("GET /register", app.createUser)
+	mux.HandleFunc("GET /login", app.createAuthenticationToken)
 	mux.HandleFunc("GET /ws", websocketManager.ServeWebSocket)
 	mux.HandleFunc("GET /home", app.homeHandler)
 

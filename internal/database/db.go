@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+
 	// "errors"
 	"time"
 
@@ -33,15 +34,6 @@ func New(dsn string /*automigrate bool*/) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// db, err := sql.Open("sqlite3", dsn)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// if err := db.PingContext(ctx); err != nil {
-	// 	return nil, err
-	// }
 
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(25)
