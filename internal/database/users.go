@@ -92,3 +92,20 @@ func (db *DB) UpdateUserHashedPassword(id int, hashedPassword string) error {
 	_, err := db.ExecContext(ctx, query, hashedPassword, id)
 	return err
 }
+
+
+func (db *DB) GetAllUsers() ([]User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
+
+	var users []User
+
+	query := `SELECT * FROM users ORDER BY username ASC`
+
+	err := db.GetContext(ctx, &users, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

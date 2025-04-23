@@ -83,6 +83,18 @@ func (db DB) Create() {
 			FOREIGN KEY (post_id) REFERENCES post(post_id)
 		);`
 
+	const CreateMessageTable = `
+		
+		CREATE TABLE IF NOT EXISTS message (
+			message_id INTEGER PRIMARY KEY AUTOINCREMENT,
+			sender_id INTEGER NOT NULL ,
+			reciever_id INTEGER NOT NULL,
+			message TEXT NOT NULL,
+			created_at DATETIME default CURRENT_TIMESTAMP,
+			FOREIGN KEY (sender_id) REFERENCES user(user_id),
+			FOREIGN KEY (reciever_id) REFERENCES user(user_id)
+			);`
+
 	createTableStatements := []string{
 		CreateCategoryTable,
 		CreateCommentTable,
@@ -91,6 +103,7 @@ func (db DB) Create() {
 		CreateSessionTable,
 		CreateUserTable,
 		CreateNotificationTable,
+		CreateMessageTable,
 	}
 
 	for _, stmt := range createTableStatements {
