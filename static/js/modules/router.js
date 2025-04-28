@@ -14,6 +14,7 @@ const router = async () => {
     { path: "/login", view: LoginView },
     { path: "/register", view: RegisterView },
     { path: "/error", view: console.log("error") },
+    
   ];
 
   const potentialMatches = routes.map(route => {

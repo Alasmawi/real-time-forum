@@ -12,6 +12,7 @@ type Category struct {
 }
 
 type Post struct {
+	ID         int            `db:"id"`
 	UserID     int            `db:"user_id"`
 	Username   string         `db:"username"`
 	FirstName  string         `db:"first_name"`
@@ -65,7 +66,7 @@ func (db *DB) GetPostByID(postID int) (*Post, error) {
 
 	query := `SELECT p.user_id, p.username, p.first_name, p.last_name, p.likes, p.dislikes, p.comments
               FROM post p
-              WHERE p.id = $1`
+              WHERE p.post_id = $1`
 
 	err := db.GetContext(ctx, &post, query, postID)
 	if err != nil {
@@ -86,7 +87,7 @@ func (db *DB) GetAllPosts() ([]Post, error) {
 
 	var posts []Post
 
-	query := `SELECT p.user_id, p.username, p.first_name, p.last_name, p.avatar, p.likes, p.dislikes, p.comments
+	query := `SELECT p.post_id, p.user_id, p.username, p.first_name, p.last_name, p.avatar, p.likes, p.dislikes, p.comments
               FROM post p`
 
 	err := db.GetContext(ctx, &posts, query)

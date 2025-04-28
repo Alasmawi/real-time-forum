@@ -57,7 +57,7 @@ func (db *DB) GetMessagesBetweenUsers(senderid, recieverid int) ([]Message, erro
 
 	var messages []Message
 
-	query := `SELECT m.id, m.sender_id, m.reciever_id, m.message, m.created_at
+	query := `SELECT m.message_id, m.sender_id, m.reciever_id, m.message, m.created_at
 			  FROM message m
 			  WHERE m.sender_id = $1 AND m.reciever_id = $2`
 

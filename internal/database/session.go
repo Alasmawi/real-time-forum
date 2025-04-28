@@ -5,15 +5,25 @@ import (
 	"time"
 )
 
-func (db *DB) InsertSession(email, hashedPassword string) (int, error) {
+//session needs to be generated via uuid, should be the same
+
+/*
+
+			session_id TEXT PRIMARY KEY,
+			user_id INTEGER NOT NULL UNIQUE,
+			end_time DATETIME NOT NULL,
+*/
+func (db *DB) InsertSession(userid int) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	query := `
-		INSERT INTO session (created, email, hashed_password)
+		INSERT INTO session (session_id, user_id, end_time)
 		VALUES ($1, $2, $3)`
 
-	result, err := db.ExecContext(ctx, query, time.Now(), email, hashedPassword)
+	sessionID := generateUUID() // Assume generateUUID() is a helper function to generate UUIDs
+	endTime := time.Now().Add(time.Hour) // Example: session ends in 24 hours
+	result, err := db.ExecContext(ctx, query, sessionID, userid, endTime)
 	if err != nil {
 		return 0, err
 	}
@@ -25,3 +35,5 @@ func (db *DB) InsertSession(email, hashedPassword string) (int, error) {
 
 	return int(id), err
 }
+
+
