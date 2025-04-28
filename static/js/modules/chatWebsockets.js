@@ -93,17 +93,6 @@ function changeChatRoom() {
     return false;
 }
 
-// /**
-//  * Sends a new message onto the Websocket
-//  **/
-// function sendMessage() {
-//     var newmessage = document.getElementById("message");
-//     if (newmessage != null) {
-//         sendEvent("send_message", newmessage.value)
-//     }
-//     return false;
-// }
-
 /**
 * sendMessage will send a new message onto the Chat
 **/
@@ -150,7 +139,7 @@ function chatFunctionality() {
     document.getElementById("chatroom-selection").onsubmit = changeChatRoom;
     document.getElementById("chatroom-message").onsubmit = sendMessage;
 
-    // Check if the browser supports WebSocket
+    // Check if the browser supports WebSocket0........................0000000000000000000000000000.0
     if (window["WebSocket"]) {
         console.log("supports websockets");
 

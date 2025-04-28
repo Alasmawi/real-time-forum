@@ -1,14 +1,17 @@
 package api
 
 import (
+	"log"
 	"net/http"
+	"time"
+
 	// "strconv"
 	// "time"
 
 	"reboot01.com/js/forum/internal/database"
-	"reboot01.com/js/forum/internal/password"
 	"reboot01.com/js/forum/internal/request"
 	"reboot01.com/js/forum/internal/response"
+	"reboot01.com/js/forum/internal/security"
 	"reboot01.com/js/forum/internal/validator"
 	// "github.com/pascaldekloe/jwt"
 )
@@ -30,12 +33,12 @@ func (app *Application) status(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Username   string              `json:"Username"`
-		Identifier string              `json:"Identifier"`
-		Password   string              `json:"Password"`
-		Age        string              `json:"Age"`
-		Sex        string              `json:"Sex"`
-		Validator  validator.Validator `json:"-"`
+		Username  string              `json:"username"`
+		Email     string              `json:"email"`
+		Password  string              `json:"password"`
+		Age       string              `json:"age"`
+		Sex       string              `json:"sex"`
+		Validator validator.Validator `json:"-"`
 	}
 
 	err := request.DecodeJSON(w, r, &input)
@@ -44,37 +47,42 @@ func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, found, err := app.DB.GetUserByEmail(input.Identifier)
+	_, usernameFound, err := app.DB.GetUserByUsername(input.Username)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
 	}
 
-	input.Validator.CheckField(input.Identifier != "", "Identifier", "Identifier is required")
-	input.Validator.CheckField(validator.Matches(input.Identifier, validator.RgxEmail), "Identifier", "Must be a valid email address")
-	input.Validator.CheckField(!found, "Identifier", "Identifier is already in use")
+	_, emailFound, err := app.DB.GetUserByEmail(input.Email)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
 
-	input.Validator.CheckField(input.Identifier != "", "Identifier", "Identifier is required")
-	input.Validator.CheckField(validator.Matches(input.Identifier, validator.RgxEmail), "Identifier", "Must be a valid email address")
-	input.Validator.CheckField(!found, "Identifier", "Identifier is already in use")
+	input.Validator.CheckField(input.Username != "", "Username", "Username is required")
+	input.Validator.CheckField(!usernameFound, "Username", "Username is already in use")
+
+	input.Validator.CheckField(input.Email != "", "Email", "Email is required")
+	input.Validator.CheckField(validator.Matches(input.Email, validator.RgxEmail), "Email", "Must be a valid email address")
+	input.Validator.CheckField(!emailFound, "Email", "Email is already in use")
 
 	input.Validator.CheckField(input.Password != "", "Password", "Password is required")
 	input.Validator.CheckField(len(input.Password) >= 8, "Password", "Password is too short")
 	input.Validator.CheckField(len(input.Password) <= 72, "Password", "Password is too long")
-	input.Validator.CheckField(validator.NotIn(input.Password, password.CommonPasswords...), "Password", "Password is too common")
+	input.Validator.CheckField(validator.NotIn(input.Password, security.CommonPasswords...), "Password", "Password is too common")
 
 	if input.Validator.HasErrors() {
 		app.failedValidation(w, r, input.Validator)
 		return
 	}
 
-	hashedPassword, err := password.Hash(input.Password)
+	hashedPassword, err := security.Hash(input.Password)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
 	}
 
-	_, err = app.DB.InsertUser(input.Identifier, hashedPassword)
+	_, err = app.DB.InsertUser(input.Email, hashedPassword)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -85,8 +93,8 @@ func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Identifier string              `json:"Identifier"`
-		Password   string              `json:"Password"`
+		Identifier string              `json:"identifier"` // email or username
+		Password   string              `json:"password"`
 		Validator  validator.Validator `json:"-"`
 	}
 
@@ -96,35 +104,36 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 		return
 	}
 
+	input.Validator.CheckField(input.Identifier != "", "Identifier", "Email or username is required")
+	input.Validator.CheckField(input.Password != "", "Password", "Password is required")
+
 	var user *database.User
 	var found bool
 
-	input.Validator.CheckField(input.Identifier != "", "Identifier", "Identifier is required")
-	input.Validator.CheckField(found, "Identifier", "Identifier address could not be found")
-
-	if validator.IsEmail(input.Identifier) {
+	switch validator.IsEmail(input.Identifier) {
+	case true:
 		user, found, err = app.DB.GetUserByEmail(input.Identifier)
 		if err != nil {
+			input.Validator.CheckField(found, "Email", "Email address could not be found")
 			app.serverError(w, r, err)
 			return
 		}
-	} else {
+	case false:
 		user, found, err = app.DB.GetUserByUsername(input.Identifier)
 		if err != nil {
+			input.Validator.CheckField(found, "Username", "Username address could not be found")
 			app.serverError(w, r, err)
 			return
 		}
-
 	}
 
 	if found {
-		passwordMatches, err := password.Matches(input.Password, user.HashedPassword)
+		passwordMatches, err := security.Matches(input.Password, user.HashedPassword)
 		if err != nil {
 			app.serverError(w, r, err)
 			return
 		}
 
-		input.Validator.CheckField(input.Password != "", "Password", "Password is required")
 		input.Validator.CheckField(passwordMatches, "Password", "Password is incorrect")
 	}
 
@@ -132,8 +141,6 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 		app.failedValidation(w, r, input.Validator)
 		return
 	}
-
-	
 
 	// var claims jwt.Claims
 	// claims.Subject = strconv.Itoa(user.ID)
@@ -152,17 +159,37 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 	// 	return
 	// }
 
-	data := map[string]string{
-		// "AuthenticationToken":       string(jwtBytes),
-		// "AuthenticationTokenExpiry": expiry.Format(time.RFC3339),
-	}
+	// data := map[string]string{
+	// "AuthenticationToken":       string(jwtBytes),
+	// "AuthenticationTokenExpiry": expiry.Format(time.RFC3339),
+	// }
 
 	//write cookie here
 
-	err = response.JSON(w, http.StatusOK, data)
+	// err = response.JSON(w, http.StatusOK, data)
+	// if err != nil {
+	// 	app.serverError(w, r, err)
+	// }
+
+	// Generate a new session token
+	sessionToken, err := security.GenerateToken()
 	if err != nil {
-		app.serverError(w, r, err)
+		log.Println("Error generating UUID:", err)
+		// errData := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
+		// errHandler(w, r, &errData)
 	}
+
+	stringToken := sessionToken.String()
+
+	//Set session cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    stringToken,
+		Expires:  time.Now().Add(1 * time.Hour), //1 hour lifetime
+		HttpOnly: true,
+	})
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (app *Application) protected(w http.ResponseWriter, r *http.Request) {

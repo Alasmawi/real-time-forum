@@ -1,5 +1,4 @@
-package password
-
+package security
 import (
 	"errors"
 

@@ -1,4 +1,4 @@
-import AbstractView from "./AbstarctView";
+import AbstractView from "./AbstarctView.js";
 
 export default class LoginView extends AbstractView {
     constructor() {
@@ -10,9 +10,9 @@ export default class LoginView extends AbstractView {
         return `
         <div style="border: 3px solid black;margin-top: 30px;">
             <form id="login-form">
-                <label for="username-email">username/email:</label>
-                <input type="text" id="username-email" name="username-email"><br>
-                <label for="password">password:</label>
+                <label for="identifer">Email or Username:</label>
+                <input type="text" id="identifier" name="identifier"><br>
+                <label for="password">Password:</label>
                 <input type="password" id="password" name="password"><br><br>
                 <input type="submit" value="Login">
             </form>
@@ -21,36 +21,34 @@ export default class LoginView extends AbstractView {
     }
 
     async getData() {
+        
         let formData = {
-            "username-email": document.getElementById("username-email").value,
-            "password": document.getElementById("password").value
+            "identifier": document.getElementById("identifier").value,
+            "password": document.getElementById("password").value,
+        };
+
+        try {
+            const response = await fetch("/login", {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+
+            console.log("Form Data:", formData);
+            console.log("Response:", response);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Error:", errorData);
+            } else {
+                const data = await response.json();
+                console.log("Login successful:", data);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred during registration.");
         }
-        const response = await fetch("/login", {
-            method: 'post',
-            body: JSON.stringify(formData),
-            mode: 'cors',
-        });
-        const data = await response.json();
-        return data;
-        // const response = await fetch("/login");
-        // const data = await response.json();
-        // return data;
-        // let formData = {
-        //     "username-email": document.getElementById("username-email").value,
-        //     "password": document.getElementById("password").value
-        // }
-        // // Send the request
-        // fetch("login", {
-        //     method: 'post',
-        //     body: JSON.stringify(formData),
-        //     mode: 'cors',
-        // }).then((response) => {
-        //     if (response.ok) {
-        //         return response.json();
-        //     } else {
-        //         throw 'unauthorized';
-        //     }
-        // })
-        // return false;
     }
 }

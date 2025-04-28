@@ -67,7 +67,7 @@ func (db *DB) GetUserByEmail(email string) (*User, bool, error) {
 	return &user, true, err
 }
 
-func (db *DB) GetUserByUsername(email string) (*User, bool, error) {
+func (db *DB) GetUserByUsername(username string) (*User, bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -75,7 +75,7 @@ func (db *DB) GetUserByUsername(email string) (*User, bool, error) {
 
 	query := `SELECT * FROM users WHERE username = $1`
 
-	err := db.GetContext(ctx, &user, query, email)
+	err := db.GetContext(ctx, &user, query, username)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, false, nil
 	}
@@ -92,7 +92,6 @@ func (db *DB) UpdateUserHashedPassword(id int, hashedPassword string) error {
 	_, err := db.ExecContext(ctx, query, hashedPassword, id)
 	return err
 }
-
 
 func (db *DB) GetAllUsers() ([]User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)

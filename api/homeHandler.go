@@ -19,6 +19,7 @@ func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+
 	response.JSON(w, http.StatusOK, posts)
 	response.JSON(w, http.StatusOK, users)
 }

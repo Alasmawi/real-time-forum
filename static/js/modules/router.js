@@ -2,14 +2,24 @@ import ChatroomView from "../views/chatroom.js";
 import LoginView from "../views/login.js";
 import RegisterView from "../views/register.js";
 
+const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
+
+const getParams = match => {
+  const values = match.result.slice(1);
+  const keys = Array.from(match.route.path.matchAll(/:(\w+)/g)).map(result => result[1]);
+
+  return Object.fromEntries(keys.map((key, i) => {
+    return [key, values[i]];
+  }));
+};
+
 const navigateTo = url => {
   history.pushState(null, null, url);
   router();
-}
+};
 
 const router = async () => {
   const routes = [
-    { path: "/", view: console.log("root") },
     { path: "/chat", view: ChatroomView },
     { path: "/login", view: LoginView },
     { path: "/register", view: RegisterView },
@@ -17,26 +27,28 @@ const router = async () => {
     
   ];
 
+  // Test each route for potential match
   const potentialMatches = routes.map(route => {
     return {
       route: route,
-      isMatch: location.pathname === route.path || location.pathname.startsWith(route.path + "/")
+      result: location.pathname.match(pathToRegex(route.path))
     };
-  })
+  });
 
-  let match = potentialMatches.find(potentialMatch => potentialMatch.isMatch);
+  let match = potentialMatches.find(potentialMatch => potentialMatch.result !== null);
 
   if (!match) {
     match = {
       route: routes[0],
-      isMatch: true
+      result: [location.pathname]
     };
   }
 
   const view = new match.route.view(getParams(match));
-  
+
   document.querySelector("#content").innerHTML = await view.getHtml();
 
+  await view.getData();
 };
 
 window.addEventListener("popstate", router);
@@ -51,5 +63,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
   router();
 });
-
-export { router };

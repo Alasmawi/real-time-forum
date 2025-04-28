@@ -1,5 +1,5 @@
-import AbstractView from "./AbstarctView";
-import { chatFunctionality } from "../modules/chatWebsockets";
+import AbstractView from "./AbstarctView.js";
+import { chatFunctionality } from "../modules/chatWebsockets.js";
 
 export default class ChatroomView extends AbstractView {
     constructor() {
@@ -42,7 +42,7 @@ export default class ChatroomView extends AbstractView {
         `;
     }
 
-    async getData() {
+    async launchChat() {
         chatFunctionality();
     }
 }
