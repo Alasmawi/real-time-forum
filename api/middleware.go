@@ -2,8 +2,10 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
+	"time"
 
 	// "strconv"
 	// "strings"
@@ -50,58 +52,107 @@ func (app *Application) logAccess(next http.Handler) http.Handler {
 // authentication middleware
 func (app *Application) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// w.Header().Add("Vary", "Authorization")
 
-		// authorizationHeader := r.Header.Get("Authorization")
+		// Fetch session cookie
+		seshCok, err := r.Cookie("session_token")
+		if err != nil {
+			// http.Redirect(w, r, "/", http.StatusSeeOther)
+			fmt.Println("Error fetching session cookie")
+			return
+		}
 
-		// if authorizationHeader != "" {
-		// 	headerParts := strings.Split(authorizationHeader, " ")
+		// Set session token from cookie value
+		seshVal := seshCok.Value
 
-		// 	if len(headerParts) == 2 && headerParts[0] == "Bearer" {
-		// 		token := headerParts[1]
+		if seshVal == "" {
+			fmt.Println("Invalid session")
+			http.SetCookie(w, &http.Cookie{
+				Name:     "session_token",
+				Value:    "",
+				Expires:  time.Now().Add(-time.Hour),
+				HttpOnly: true,
+			})
 
-		// 		claims, err := jwt.HMACCheck([]byte(token), []byte(app.config.jwt.secretKey))
-		// 		if err != nil {
-		// 			app.invalidAuthenticationToken(w, r)
-		// 			return
-		// 		}
+			// http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 
-		// 		if !claims.Valid(time.Now()) {
-		// 			app.invalidAuthenticationToken(w, r)
-		// 			return
-		// 		}
+		//if seesion is invalid/expired, delete it from db if it still exists
+		///////////////////////////////////////////////////////
 
-		// 		if claims.Issuer != app.config.baseURL {
-		// 			app.invalidAuthenticationToken(w, r)
-		// 			return
-		// 		}
+		var exists bool
+		exists, err = app.DB.ValidateSession(seshVal)
+		if err != nil {
+			log.Println("Error :", err)
+		} else if !exists {
+			log.Println("Inavlid Session")
+			http.SetCookie(w, &http.Cookie{
+				Name:     "session_token",
+				Value:    "",
+				Expires:  time.Now().Add(-time.Hour),
+				HttpOnly: true,
+			})
 
-		// 		if !claims.AcceptAudience(app.config.baseURL) {
-		// 			app.invalidAuthenticationToken(w, r)
-		// 			return
-		// 		}
+			// http.Redirect(w, r, "/", http.StatusSeeOther)
 
-		// 		userID, err := strconv.Atoi(claims.Subject)
-		// 		if err != nil {
-		// 			app.serverError(w, r, err)
-		// 			return
-		// 		}
-
-		// 		user, found, err := app.db.GetUser(userID)
-		// 		if err != nil {
-		// 			app.serverError(w, r, err)
-		// 			return
-		// 		}
-
-		// 		if found {
-		// 			r = contextSetAuthenticatedUser(r, user)
-		// 		}
-		// 	}
-		// }
-
-		next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r)
+		}
 	})
+	// return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+	// func authenticate() {}
+	// w.Header().Add("Vary", "Authorization")
+
+	// authorizationHeader := r.Header.Get("Authorization")
+
+	// if authorizationHeader != "" {
+	// 	headerParts := strings.Split(authorizationHeader, " ")
+
+	// 	if len(headerParts) == 2 && headerParts[0] == "Bearer" {
+	// 		token := headerParts[1]
+
+	// 		claims, err := jwt.HMACCheck([]byte(token), []byte(app.config.jwt.secretKey))
+	// 		if err != nil {
+	// 			app.invalidAuthenticationToken(w, r)
+	// 			return
+	// 		}
+
+	// 		if !claims.Valid(time.Now()) {
+	// 			app.invalidAuthenticationToken(w, r)
+	// 			return
+	// 		}
+	// 		if claims.Issuer != app.config.baseURL {
+	// 			app.invalidAuthenticationToken(w, r)
+	// 			return
+	// 		}
+	// 		if !claims.AcceptAudience(app.config.baseURL) {
+	// 			app.invalidAuthenticationToken(w, r)
+	// 			return
+	// 		}
+	// 		userID, err := strconv.Atoi(claims.Subject)
+	// 		if err != nil {
+	// 			app.serverError(w, r, err)
+	// 			return
+	// 		}
+	// 		user, found, err := app.db.GetUser(userID)
+	// 		if err != nil {
+	// 			app.serverError(w, r, err)
+	// 			return
+	// 		}
+	// 		if found {
+	// 			r = contextSetAuthenticatedUser(r, user)
+	// 		}
+	// 	}
+	// }
+
+	// next.ServeHTTP(w, r)
+	// })
 }
+
+
+
+
+
 
 func (app *Application) requireAuthenticatedUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

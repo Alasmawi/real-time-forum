@@ -2,28 +2,24 @@ package database
 
 import (
 	"context"
-	"time"
 )
 
 //session needs to be generated via uuid, should be the same
 
 /*
-
-			session_id TEXT PRIMARY KEY,
-			user_id INTEGER NOT NULL UNIQUE,
-			end_time DATETIME NOT NULL,
+session_id TEXT PRIMARY KEY,
+user_id INTEGER NOT NULL UNIQUE,
+end_time DATETIME NOT NULL,
 */
-func (db *DB) InsertSession(userid int) (int, error) {
+func (db *DB) InsertSession(userid int, sessionID string) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	query := `
-		INSERT INTO session (session_id, user_id, end_time)
+		INSERT INTO session (session_id, user_id)
 		VALUES ($1, $2, $3)`
 
-	sessionID := generateUUID() // Assume generateUUID() is a helper function to generate UUIDs
-	endTime := time.Now().Add(time.Hour) // Example: session ends in 24 hours
-	result, err := db.ExecContext(ctx, query, sessionID, userid, endTime)
+	result, err := db.ExecContext(ctx, query, sessionID, userid)
 	if err != nil {
 		return 0, err
 	}
@@ -36,4 +32,41 @@ func (db *DB) InsertSession(userid int) (int, error) {
 	return int(id), err
 }
 
+func (db *DB) ValidateSession(sessionID string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
 
+	query := `
+		SELECT COUNT(*)
+		FROM session
+		WHERE session_id = $1`
+
+	var count int
+	err := db.GetContext(ctx, &count, query, sessionID)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
+func (db *DB) DeleteSession(sessionID string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
+
+	query := `
+		DELETE FROM session
+		WHERE session_id = $1`
+
+	result, err := db.ExecContext(ctx, query, sessionID)
+	if err != nil {
+		return false, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return rowsAffected > 0, nil
+}
