@@ -20,11 +20,10 @@ const navigateTo = url => {
 
 const router = async () => {
   const routes = [
-    { path: "/chat", view: ChatroomView },
-    { path: "/login", view: LoginView },
+    { path: "/", view: LoginView },
     { path: "/register", view: RegisterView },
-    { path: "/error", view: console.log("error") },
-    
+    { path: "/chat", view: ChatroomView, },
+    { path: "/error", view: ChatroomView, },
   ];
 
   // Test each route for potential match

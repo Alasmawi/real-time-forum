@@ -41,7 +41,7 @@ func (db *DB) GetUser(id int) (*User, bool, error) {
 
 	var user User
 
-	query := `SELECT * FROM users WHERE id = $1`
+	query := `SELECT * FROM user WHERE id = $1`
 
 	err := db.GetContext(ctx, &user, query, id)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -57,7 +57,7 @@ func (db *DB) GetUserByEmail(email string) (*User, bool, error) {
 
 	var user User
 
-	query := `SELECT * FROM users WHERE email = $1`
+	query := `SELECT * FROM user WHERE email = $1`
 
 	err := db.GetContext(ctx, &user, query, email)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -73,7 +73,7 @@ func (db *DB) GetUserByUsername(username string) (*User, bool, error) {
 
 	var user User
 
-	query := `SELECT * FROM users WHERE username = $1`
+	query := `SELECT * FROM user WHERE username = $1`
 
 	err := db.GetContext(ctx, &user, query, username)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -87,7 +87,7 @@ func (db *DB) UpdateUserHashedPassword(id int, hashedPassword string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
-	query := `UPDATE users SET hashed_password = $1 WHERE id = $2`
+	query := `UPDATE user SET hashed_password = $1 WHERE id = $2`
 
 	_, err := db.ExecContext(ctx, query, hashedPassword, id)
 	return err
@@ -99,7 +99,7 @@ func (db *DB) GetAllUsers() ([]User, error) {
 
 	var users []User
 
-	query := `SELECT * FROM users ORDER BY username ASC`
+	query := `SELECT * FROM user ORDER BY username ASC`
 
 	err := db.GetContext(ctx, &users, query)
 	if err != nil {

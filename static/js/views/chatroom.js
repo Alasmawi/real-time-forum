@@ -42,7 +42,7 @@ export default class ChatroomView extends AbstractView {
         `;
     }
 
-    async launchChat() {
+    async getData() {
         chatFunctionality();
     }
 }

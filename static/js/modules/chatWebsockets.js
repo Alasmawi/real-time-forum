@@ -139,7 +139,7 @@ function chatFunctionality() {
     document.getElementById("chatroom-selection").onsubmit = changeChatRoom;
     document.getElementById("chatroom-message").onsubmit = sendMessage;
 
-    // Check if the browser supports WebSocket0........................0000000000000000000000000000.0
+    // Check if the browser supports WebSockets
     if (window["WebSocket"]) {
         console.log("supports websockets");
 

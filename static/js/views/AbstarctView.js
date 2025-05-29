@@ -14,7 +14,7 @@ export default class AbstractView {
     }
 
     async getData() {
-       
+        throw new Error("Method 'getHtml()' must be implemented.");
     }
 }
 // This is an abstract class that defines the structure for all views in the application.

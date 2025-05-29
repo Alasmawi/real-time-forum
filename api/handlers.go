@@ -31,6 +31,10 @@ func (app *Application) status(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *Application) serverIndex(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./static/index.html")
+}
+
 func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Username  string              `json:"username"`
@@ -144,28 +148,22 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 
 	// var claims jwt.Claims
 	// claims.Subject = strconv.Itoa(user.ID)
-
 	// expiry := time.Now().Add(24 * time.Hour)
 	// claims.Issued = jwt.NewNumericTime(time.Now())
 	// claims.NotBefore = jwt.NewNumericTime(time.Now())
 	// claims.Expires = jwt.NewNumericTime(expiry)
-
 	// claims.Issuer = app.config.baseURL
 	// claims.Audiences = []string{app.config.baseURL}
-
 	// jwtBytes, err := claims.HMACSign(jwt.HS256, []byte(app.config.jwt.secretKey))
 	// if err != nil {
 	// 	app.serverError(w, r, err)
 	// 	return
 	// }
-
 	// data := map[string]string{
 	// "AuthenticationToken":       string(jwtBytes),
 	// "AuthenticationTokenExpiry": expiry.Format(time.RFC3339),
 	// }
-
 	//write cookie here
-
 	// err = response.JSON(w, http.StatusOK, data)
 	// if err != nil {
 	// 	app.serverError(w, r, err)
