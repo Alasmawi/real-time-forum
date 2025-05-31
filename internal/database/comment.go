@@ -6,16 +6,16 @@ import (
 )
 
 type Comment struct {
-	ID        int       `db:"comment_id"`
-	PostID    int       `db:"post_id"`
-	UserID    int       `db:"user_id"`
-	FirstName string    `db:"first_name"`
-	LastName  string    `db:"last_name"`
-	Username  string    `db:"username"`
-	Content   string    `db:"content"`
-	CreatedAt time.Time `db:"created_at"`
-	Likes     int       `db:"likes"`
-	Dislikes  int       `db:"dislikes"`
+	ID        int       `json:"id"`
+	PostID    int       `json:"post_id"`
+	UserID    int       `json:"user_id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Username  string    `json:"username"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	Likes     int       `json:"likes"`
+	Dislikes  int       `json:"dislikes"`
 }
 
 func (db DB) InsertComment(postID, userID int, content string) (int, error) {

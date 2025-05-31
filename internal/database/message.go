@@ -6,11 +6,11 @@ import (
 )
 
 type Message struct {
-	SenderID   int       `db:"sender_id"`
-	Sender     string    `db:"sender"`
-	ReceiverID int       `db:"reciever_id"`
-	Message    string    `db:"message"`
-	CreatedAt  time.Time `db:"created_at"`
+	SenderID   int       `json:"sender_id"`
+	Sender     string    `json:"sender"`
+	ReceiverID int       `json:"receiver_id"`
+	Message    string    `json:"message"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 func (db *DB) InsertMessage(senderid, recieverid int, message string) (int, error) {

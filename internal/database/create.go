@@ -1,20 +1,10 @@
 package database
 
 import (
-	"log"
-
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func (db DB) Create() {
-
-	var tableName string
-	err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='category'").Scan(&tableName)
-	if err == nil && tableName == "category" {
-		log.Println("Database already exists. Skipping table creation.")
-		return
-	}
-
+func (db DB) CreateDatabase() error {
 	const CreateCategoryTable = `
 		CREATE TABLE IF NOT EXISTS category (
 			category_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,8 +57,8 @@ func (db DB) Create() {
 			username TEXT NOT NULL,
 			email TEXT NOT NULL,
 			password TEXT NOT NULL,
-			current_session TEXT,
-			FOREIGN KEY (current_session) REFERENCES session(session_id)
+			session_id TEXT,
+			FOREIGN KEY (session_id) REFERENCES session(session_id)
 		);
 		`
 
@@ -84,7 +74,6 @@ func (db DB) Create() {
 		);`
 
 	const CreateMessageTable = `
-		
 		CREATE TABLE IF NOT EXISTS message (
 			message_id INTEGER PRIMARY KEY AUTOINCREMENT,
 			sender_id INTEGER NOT NULL ,
@@ -107,39 +96,11 @@ func (db DB) Create() {
 	}
 
 	for _, stmt := range createTableStatements {
-		_, err = db.Exec(stmt)
+		_, err := db.Exec(stmt)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
-	insertCategories := []string{
-		`INSERT INTO category (name) VALUES ('AI & ML');`,
-		`INSERT INTO category (name) VALUES ('Cloud & DevOps');`,
-		`INSERT INTO category (name) VALUES ('Cybersecurity');`,
-		`INSERT INTO category (name) VALUES ('Blockchain & Web3');`,
-		`INSERT INTO category (name) VALUES ('AR/VR & Gaming');`,
-		`INSERT INTO category (name) VALUES ('UI/UX Design');`,
-		`INSERT INTO category (name) VALUES ('IoT & Edge Computing');`,
-		`INSERT INTO category (name) VALUES ('Data Analytics');`,
-		`INSERT INTO category (name) VALUES ('Quantum Computing');`,
-		`INSERT INTO category (name) VALUES ('SRE & Observability');`,
-	}
 
-	insertUsers := []string{
-		`INSERT INTO user (f_name, l_name, username, email, password, current_session) VALUES ('Alicia', 'Nguyen', 'aliceN', 'aliceN@example.com', '123', 1');`,
-	}
-
-	allInserts := [][]string{
-		insertCategories,
-		insertUsers,
-	}
-
-	for _, group := range allInserts {
-		for _, stmt := range group {
-			_, err := db.Exec(stmt)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-	}
+	return nil
 }
