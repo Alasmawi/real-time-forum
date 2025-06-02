@@ -2,6 +2,7 @@ import ChatroomView from "../views/chatroom.js";
 import LoginView from "../views/login.js";
 import RegisterView from "../views/register.js";
 import PostsView from "../views/posts.js";
+import NewPostView from "../views/newpost.js";
 
 const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
 
@@ -26,6 +27,7 @@ const router = async () => {
     { path: "/register", view: RegisterView },
     { path: "/chat", view: ChatroomView, },
     { path: "/posts", view: PostsView, },
+    { path: "/newpost", view: NewPostView, },
   ];
 
   // Test each route for potential match
