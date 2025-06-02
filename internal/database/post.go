@@ -12,8 +12,7 @@ type Category struct {
 
 type Post struct {
 	Id         int        `json:"id"`
-	UserId     int        `json:"user_id"`
-	Usernme    string     `json:"username"`
+	Username   string     `json:"username"`
 	Content    string     `json:"content"`
 	CreatedAt  time.Time  `json:"created_at"`
 	Comments   []Comment  `json:"comments"`
@@ -55,7 +54,7 @@ func (db *DB) GetCategoryForPost(postID int) (*[]Category, error) {
 	return &categories, nil
 }
 
-func (db *DB) GetPostByID(postID int) (Post, error) {
+func (db *DB) GetPostByID(postID int) (*Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -67,24 +66,13 @@ func (db *DB) GetPostByID(postID int) (Post, error) {
 
 	err := db.GetContext(ctx, &post, query, postID)
 	if err != nil {
-		return Post{}, err
+		return nil, err
 	}
 
-	categoriesPtr, err := db.GetCategoryForPost(postID)
-	if err != nil {
-		return Post{}, err
-	}
-	post.Categories = *categoriesPtr
-
-	post.Comments, err = db.GetCommentsForPost(postID)
-	if err != nil {
-		return Post{}, err
-	}
-
-	return post, nil
+	return &post, nil
 }
 
-func (db *DB) GetAllPosts() ([]Post, error) {
+func (db *DB) GetAllPosts() (*[]Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -105,14 +93,7 @@ func (db *DB) GetAllPosts() ([]Post, error) {
 		return nil, err
 	}
 
-	for i := range posts {
-		categoriesPtr, err := db.GetCategoryForPost(posts[i].Id)
-		if err != nil {
-			return nil, err
-		}
-		posts[i].Categories = *categoriesPtr
-	}
-	return posts, nil
+	return &posts, nil
 }
 
 func (db *DB) InsertPost(content string, userID int) (int, error) {
