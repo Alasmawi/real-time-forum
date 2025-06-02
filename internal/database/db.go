@@ -40,7 +40,15 @@ func New(dsn string /*automigrate bool*/) (*DB, error) {
 	db.SetConnMaxIdleTime(5 * time.Minute)
 	db.SetConnMaxLifetime(2 * time.Hour)
 
-	db.Create()
+	err = db.CreateDatabase()
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.SeedData()
+	if err != nil {
+		return nil, err
+	}
 
 	// if automigrate {
 	// 	iofsDriver, err := iofs.New(assets.EmbeddedFiles, "migrations")

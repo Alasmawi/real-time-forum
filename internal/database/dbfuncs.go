@@ -5,6 +5,8 @@ import (
 	"database/sql"
 )
 
+// GetContext fetches a single row from the database.
+// dest must be a pointer to a struct (e.g., *MyStruct).
 func (db *DB) GetContext(ctx context.Context /*q QueryerContext,*/, dest interface{}, query string, args ...interface{}) error {
 	r := db.QueryRowContext(ctx, query, args...)
 	return r.Scan(dest)

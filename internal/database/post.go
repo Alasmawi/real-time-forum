@@ -2,28 +2,22 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"time"
 )
 
 type Category struct {
-	ID   int    `db:"id"`
-	Name string `db:"name"`
+	Name string `json:"name"`
 }
 
 type Post struct {
-	ID         int            `db:"id"`
-	UserID     int            `db:"user_id"`
-	Username   string         `db:"username"`
-	FirstName  string         `db:"first_name"`
-	LastName   string         `db:"last_name"`
-	Likes      int            `db:"likes"`
-	Dislikes   int            `db:"dislikes"`
-	Comments   int            `db:"comments"`
-	Categories []Category     `db:"categories"`
+	Id         int        `json:"id"`
+	UserId     int        `json:"user_id"`
+	Usernme    string     `json:"username"`
+	Comments   []Comment  `json:"comments"`
+	Categories []Category `json:"categories"`
 }
 
-func (db *DB) GetAllCategories() ([]Category, error) {
+func (db *DB) GetAllCategories() (*[]Category, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -36,18 +30,18 @@ func (db *DB) GetAllCategories() ([]Category, error) {
 		return nil, err
 	}
 
-	return categories, nil
+	return &categories, nil
 }
 
-func (db *DB) GetCategoriesForPost(postID int) ([]Category, error) {
+func (db *DB) GetCategoryForPost(postID int) (*[]Category, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	var categories []Category
 
-	query := `SELECT c.category_id, c.name 
+	query := `SELECT c.id, c.name 
               FROM category c
-              JOIN post_category pc ON c.category_id = pc.category_id
+              JOIN post_has_category pc ON c.id = pc.category_id
               WHERE pc.post_id = $1`
 
 	err := db.GetContext(ctx, &categories, query, postID)
@@ -55,30 +49,36 @@ func (db *DB) GetCategoriesForPost(postID int) ([]Category, error) {
 		return nil, err
 	}
 
-	return categories, nil
+	return &categories, nil
 }
 
-func (db *DB) GetPostByID(postID int) (*Post, error) {
+func (db *DB) GetPostByID(postID int) (Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	var post Post
 
-	query := `SELECT p.user_id, p.username, p.first_name, p.last_name, p.likes, p.dislikes, p.comments
+	query := `SELECT p.id, p.content, p.post_at, p.user_id
               FROM post p
-              WHERE p.post_id = $1`
+              WHERE p.id = $1`
 
 	err := db.GetContext(ctx, &post, query, postID)
 	if err != nil {
-		return nil, err
+		return Post{}, err
 	}
 
-	post.Categories, err = db.GetCategoriesForPost(postID)
+	categoriesPtr, err := db.GetCategoryForPost(postID)
 	if err != nil {
-		return nil, err
+		return Post{}, err
+	}
+	post.Categories = *categoriesPtr
+
+	post.Comments, err = db.GetCommentsForPost(postID)
+	if err != nil {
+		return Post{}, err
 	}
 
-	return &post, nil
+	return post, nil
 }
 
 func (db *DB) GetAllPosts() ([]Post, error) {
@@ -87,8 +87,15 @@ func (db *DB) GetAllPosts() ([]Post, error) {
 
 	var posts []Post
 
-	query := `SELECT p.post_id, p.user_id, p.username, p.first_name, p.last_name, p.avatar, p.likes, p.dislikes, p.comments
-              FROM post p`
+	query := `SELECT p.id, p.content, p.post_at, p.user_id, u.username
+            FROM post p            
+            JOIN user u ON p.user_id = u.id
+            
+            SELECT c.name
+            FROM category c
+            JOIN post_has_category phc ON c.id = phc.category_id
+            WHERE phc.post_id = p.id
+            `
 
 	err := db.GetContext(ctx, &posts, query)
 	if err != nil {
@@ -96,54 +103,39 @@ func (db *DB) GetAllPosts() ([]Post, error) {
 	}
 
 	for i := range posts {
-		posts[i].Categories, err = db.GetCategoriesForPost(posts[i].UserID)
+		categoriesPtr, err := db.GetCategoryForPost(posts[i].Id)
 		if err != nil {
 			return nil, err
 		}
+		posts[i].Categories = *categoriesPtr
 	}
-
 	return posts, nil
 }
 
-func (db *DB) InsertPost(content string, image sql.NullString, userID string) (int, error) {
-    ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-    defer cancel()
+func (db *DB) InsertPost(content string, userID int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
 
-    query := "INSERT INTO post (image, content, post_at, user_id) VALUES (?, ?, ?, ?)"
-    stmt, err := db.PrepareContext(ctx, query)
-    if err != nil {
-        return 0, err
-    }
-    defer stmt.Close()
+	query := "INSERT INTO post (content, post_at, user_id) VALUES (?, ?, ?)"
 
-    res, err := stmt.ExecContext(ctx, image, content, time.Now(), userID)
-    if err != nil {
-        return 0, err
-    }
+	_, err := db.ExecContext(ctx, query, content, time.Now(), userID)
+	if err != nil {
+		return err
+	}
 
-    lastID, err := res.LastInsertId()
-    if err != nil {
-        return 0, err
-    }
-
-    return int(lastID), nil
+	return nil
 }
 
 func (db *DB) InsertPostCategory(postID int, categoryID int) error {
-    ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-    defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
 
-    query := "INSERT INTO post_has_category (post_id, category_id) VALUES (?, ?)"
-    stmt, err := db.PrepareContext(ctx, query)
-    if err != nil {
-        return err
-    }
-    defer stmt.Close()
+	query := "INSERT INTO post_has_category (post_id, category_id) VALUES (?, ?)"
 
-    _, err = stmt.ExecContext(ctx, postID, categoryID)
-    if err != nil {
-        return err
-    }
+	_, err := db.ExecContext(ctx, query, postID, categoryID)
+	if err != nil {
+		return err
+	}
 
-    return nil
+	return nil
 }

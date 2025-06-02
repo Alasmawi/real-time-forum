@@ -1,6 +1,7 @@
 import ChatroomView from "../views/chatroom.js";
 import LoginView from "../views/login.js";
 import RegisterView from "../views/register.js";
+import PostsView from "../views/posts.js";
 
 const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
 
@@ -20,10 +21,11 @@ const navigateTo = url => {
 
 const router = async () => {
   const routes = [
+    { path: "/404", view: ChatroomView, },
     { path: "/", view: LoginView },
     { path: "/register", view: RegisterView },
     { path: "/chat", view: ChatroomView, },
-    { path: "/error", view: ChatroomView, },
+    { path: "/posts", view: PostsView, },
   ];
 
   // Test each route for potential match
@@ -37,7 +39,7 @@ const router = async () => {
   let match = potentialMatches.find(potentialMatch => potentialMatch.result !== null);
 
   if (!match) {
-    match = {
+      match = {
       route: routes[0],
       result: [location.pathname]
     };
