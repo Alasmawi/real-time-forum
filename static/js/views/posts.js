@@ -1,4 +1,5 @@
 import AbstractView from "./AbstarctView.js";
+import { formatTime } from "../utils/timeFormatter.js";
 
 export default class PostsView extends AbstractView {
     constructor() {
@@ -37,6 +38,8 @@ export default class PostsView extends AbstractView {
                     <h3>Post ID: ${post.id}</h3>
                     <p><strong>User ID:</strong> ${post.user_id}</p>
                     <p><strong>Username:</strong> ${post.username}</p>
+                    <p><strong>Content:</strong> ${post.content || 'No content'}</p>
+                    <p><strong>Created:</strong> ${formatTime(post.created_at)}</p>
                     <p><strong>First Name:</strong> ${post.first_name}</p>
                     <p><strong>Last Name:</strong> ${post.last_name}</p>
                     <p><strong>Likes:</strong> ${post.likes}</p>
@@ -44,7 +47,7 @@ export default class PostsView extends AbstractView {
                     <p><strong>Comments:</strong> ${post.comments}</p>
                     <p><strong>Categories:</strong></p>
                     <ul>
-                        ${post.categories.map(category => `<li> <br>${category.name}</li>`).join('')}
+                        ${post.categories && post.categories.length > 0 ? post.categories.map(category => `<li>${category.name}</li>`).join('') : '<li>No categories</li>'}
                     </ul>
                 `;
     
