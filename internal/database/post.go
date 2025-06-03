@@ -13,6 +13,8 @@ type Category struct {
 type Post struct {
 	Id         int        `json:"id"`
 	Username   string     `json:"username"`
+	Content    string     `json:"content"`
+	CreatedAt  time.Time  `json:"created_at"`
 	Comments   []Comment  `json:"comments"`
 	Categories []Category `json:"categories"`
 }
@@ -58,7 +60,7 @@ func (db *DB) GetPostByID(postID int) (*Post, error) {
 
 	var post Post
 
-	query := `SELECT p.id, p.content, p.post_at, p.user_id
+	query := `SELECT p.id, p.content, p.created_at, p.user_id
               FROM post p
               WHERE p.id = $1`
 
@@ -76,7 +78,7 @@ func (db *DB) GetAllPosts() (*[]Post, error) {
 
 	var posts []Post
 
-	query := `SELECT p.id, p.content, p.post_at, p.user_id, u.username
+	query := `SELECT p.id, p.content, p.created_at, p.user_id, u.username
             FROM post p            
             JOIN user u ON p.user_id = u.id
             
@@ -94,18 +96,23 @@ func (db *DB) GetAllPosts() (*[]Post, error) {
 	return &posts, nil
 }
 
-func (db *DB) InsertPost(content string, userID int) error {
+func (db *DB) InsertPost(content string, userID int) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
-	query := "INSERT INTO post (content, post_at, user_id) VALUES (?, ?, ?)"
+	query := "INSERT INTO post (content, created_at, user_id) VALUES (?, ?, ?)"
 
-	_, err := db.ExecContext(ctx, query, content, time.Now(), userID)
+	result, err := db.ExecContext(ctx, query, content, time.Now(), userID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id), nil
 }
 
 func (db *DB) InsertPostCategory(postID int, categoryID int) error {

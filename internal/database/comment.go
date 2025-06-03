@@ -39,7 +39,7 @@ func (db *DB) GetCommentsForPost(postID int) ([]Comment, error) {
 	var comments []Comment
 
 	query := `SELECT
-    c.id, c.post_id, c.user_id, u.username, c.content, c.comment_at AS created_at
+    c.id, c.post_id, c.user_id, u.username, c.content, c.created_at
 FROM
     comment c
 JOIN user u ON c.user_id = u.id

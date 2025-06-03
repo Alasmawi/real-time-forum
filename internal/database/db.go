@@ -40,6 +40,11 @@ func New(dsn string /*automigrate bool*/) (*DB, error) {
 	db.SetConnMaxIdleTime(5 * time.Minute)
 	db.SetConnMaxLifetime(2 * time.Hour)
 
+	err = db.DropDatabase()
+	if err != nil {
+		return nil, err
+	}
+
 	err = db.CreateDatabase()
 	if err != nil {
 		return nil, err
