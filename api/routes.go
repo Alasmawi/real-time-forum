@@ -29,7 +29,7 @@ func (app *Application) routes() http.Handler {
 	mux.HandleFunc("POST /v1/login", app.createAuthenticationToken)
 	mux.HandleFunc("POST /v1/register", app.createUser)
 	mux.HandleFunc("POST /v1/notification", app.createUser)
-	mux.HandleFunc("GET /v1/posts", app.fetchAllPosts)
+	mux.HandleFunc("GET /v1/posts", app.fetchPosts)
 
 	mux.HandleFunc("/", app.serverIndex)
 
