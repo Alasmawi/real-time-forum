@@ -1,4 +1,4 @@
-import AbstractView from "./AbstarctView.js";
+import AbstractView from "./abstract-view.js";
 
 export default class LoginView extends AbstractView {
     constructor() {
@@ -49,7 +49,7 @@ export default class LoginView extends AbstractView {
                 }
             } catch (error) {
                 console.error("Error:", error);
-                console.log("An error occurred during registration.");
+                console.log("An error occurred during login.");
             }
         });
     }

@@ -41,7 +41,7 @@ func (app *Application) logAccess(next http.Handler) http.Handler {
 
 		userAttrs := slog.Group("user", "ip", ip)
 		requestAttrs := slog.Group("request", "method", method, "url", url, "proto", proto)
-		responseAttrs := slog.Group("repsonse", "status", mw.StatusCode, "size", mw.BytesCount)
+		responseAttrs := slog.Group("response", "status", mw.StatusCode, "size", mw.BytesCount)
 
 		app.Logger.Info("access", userAttrs, requestAttrs, responseAttrs)
 	})
@@ -75,7 +75,7 @@ func (app *Application) authenticate(next http.Handler) http.Handler {
 		// 	return
 		// }
 
-		// //if seesion is invalid/expired, delete it from db if it still exists
+		// //if session is invalid/expired, delete it from db if it still exists
 		// ///////////////////////////////////////////////////////
 
 		// var exists bool
@@ -83,7 +83,7 @@ func (app *Application) authenticate(next http.Handler) http.Handler {
 		// if err != nil {
 		// 	log.Println("Error :", err)
 		// } else if !exists {
-		// 	log.Println("Inavlid Session")
+		// 	log.Println("Invalid Session")
 		// 	http.SetCookie(w, &http.Cookie{
 		// 		Name:     "session_token",
 		// 		Value:    "",

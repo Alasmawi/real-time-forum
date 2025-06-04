@@ -1,5 +1,5 @@
-import AbstractView from "./AbstarctView.js";
-import { chatFunctionality } from "../modules/chatWebsockets.js";
+import AbstractView from "./abstract-view.js";
+import { chatFunctionality } from "../modules/chat-websockets.js";
 
 export default class ChatroomView extends AbstractView {
     constructor() {

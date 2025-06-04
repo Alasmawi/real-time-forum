@@ -1,4 +1,4 @@
-import AbstractView from "./AbstarctView.js";
+import AbstractView from "./abstract-view.js";
 
 export default class NewPostView extends AbstractView {
     constructor() {

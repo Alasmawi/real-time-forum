@@ -2,7 +2,7 @@ import ChatroomView from "../views/chatroom.js";
 import LoginView from "../views/login.js";
 import RegisterView from "../views/register.js";
 import PostsView from "../views/posts.js";
-import NewPostView from "../views/newpost.js";
+import NewPostView from "../views/new-post.js";
 
 const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
 

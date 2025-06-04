@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	// Upgrades incomming HTTP requests into persitent websocket connections.
+	// Upgrades incoming HTTP requests into persistent websocket connections.
 	websocketUpgrader = websocket.Upgrader{
 		// CSRF check
 		CheckOrigin:     checkOrigin,
@@ -23,7 +23,7 @@ var (
 	ErrEventNotSupported = errors.New("this event type is not supported")
 )
 
-// checkOrigin will check origin and return true if its allowed
+// checkOrigin will check origin and return true if it's allowed
 func checkOrigin(r *http.Request) bool {
 
 	// Grab the request origin
@@ -37,7 +37,7 @@ func checkOrigin(r *http.Request) bool {
 	}
 }
 
-// Holds references to all registered clients and boadcasts messages to all clients.
+// Holds references to all registered clients and broadcasts messages to all clients.
 type WebsocketManager struct {
 	clients ClientList
 
@@ -47,7 +47,7 @@ type WebsocketManager struct {
 	handlers map[string]EventHandler
 }
 
-// Initalizes all the values inside manager.
+// Initializes all the values inside manager.
 func NewWebsocketManager() *WebsocketManager {
 	m := &WebsocketManager{
 		clients:  make(ClientList),
