@@ -17,7 +17,7 @@ var (
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 	}
-)
+) 
 
 var (
 	ErrEventNotSupported = errors.New("this event type is not supported")
