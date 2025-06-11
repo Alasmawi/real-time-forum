@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
 	// "strconv"
 	// "strings"
@@ -50,49 +51,51 @@ func (app *Application) logAccess(next http.Handler) http.Handler {
 // authentication middleware
 func (app *Application) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Get session cookie
+		cookie, err := r.Cookie("session_token")
+		if err != nil {
+			// No session cookie, redirect to login
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 
-		// // Fetch session cookie
-		// seshCok, err := r.Cookie("session_token")
-		// if err != nil {
-		// 	// http.Redirect(w, r, "/", http.StatusSeeOther)
-		// 	fmt.Println("Error fetching session cookie")
-		// 	return
-		// }
+		// Check if session value is empty
+		if cookie.Value == "" {
+			// Invalid session, clear cookie and redirect
+			http.SetCookie(w, &http.Cookie{
+				Name:     "session_token",
+				Value:    "",
+				Expires:  time.Now().Add(-time.Hour),
+				HttpOnly: true,
+			})
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 
-		// // Set session token from cookie value
-		// seshVal := seshCok.Value
+		// Validate session exists in database and get user
+		user, found, err := app.DB.GetUserBySession(cookie.Value)
+		if err != nil {
+			app.serverError(w, r, err)
+			return
+		}
 
-		// if seshVal == "" {
-		// 	fmt.Println("Invalid session")
-		// 	http.SetCookie(w, &http.Cookie{
-		// 		Name:     "session_token",
-		// 		Value:    "",
-		// 		Expires:  time.Now().Add(-time.Hour),
-		// 		HttpOnly: true,
-		// 	})
+		// If session doesn't exist in database, clear cookie and redirect
+		if !found {
+			// Delete invalid session from database if it exists
+			app.DB.DeleteSession(cookie.Value)
+			// Clear cookie and redirect
+			http.SetCookie(w, &http.Cookie{
+				Name:     "session_token",
+				Value:    "",
+				Expires:  time.Now().Add(-time.Hour),
+				HttpOnly: true,
+			})
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 
-		// 	// http.Redirect(w, r, "/", http.StatusSeeOther)
-		// 	return
-		// }
-
-		// //if session is invalid/expired, delete it from db if it still exists
-		// ///////////////////////////////////////////////////////
-
-		// var exists bool
-		// exists, err = app.DB.ValidateSession(seshVal)
-		// if err != nil {
-		// 	log.Println("Error :", err)
-		// } else if !exists {
-		// 	log.Println("Invalid Session")
-		// 	http.SetCookie(w, &http.Cookie{
-		// 		Name:     "session_token",
-		// 		Value:    "",
-		// 		Expires:  time.Now().Add(-time.Hour),
-		// 		HttpOnly: true,
-		// 	})
-
-		// 	// http.Redirect(w, r, "/", http.StatusSeeOther)
-
+		// Valid session: set user in context and continue
+		r = contextSetAuthenticatedUser(r, user)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -153,15 +156,15 @@ func (app *Application) authenticate(next http.Handler) http.Handler {
 // })
 //}
 
-func (app *Application) requireAuthenticatedUser(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authenticatedUser := contextGetAuthenticatedUser(r)
+// func (app *Application) requireAuthenticatedUser(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		authenticatedUser := contextGetAuthenticatedUser(r)
 
-		if authenticatedUser == nil {
-			app.authenticationRequired(w, r)
-			return
-		}
+// 		if authenticatedUser == nil {
+// 			app.authenticationRequired(w, r)
+// 			return
+// 		}
 
-		next.ServeHTTP(w, r)
-	})
-}
+// 		next.ServeHTTP(w, r)
+// 	})
+// }

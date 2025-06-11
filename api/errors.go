@@ -62,10 +62,10 @@ func (app *Application) failedValidation(w http.ResponseWriter, r *http.Request,
 }
 
 func (app *Application) invalidAuthenticationToken(w http.ResponseWriter, r *http.Request) {
-	headers := make(http.Header)
-	headers.Set("WWW-Authenticate", "Bearer")
+	// headers := make(http.Header)
+	// headers.Set("WWW-Authenticate", "Bearer")
 
-	app.errorMessage(w, r, http.StatusUnauthorized, "Invalid authentication token", headers)
+	app.errorMessage(w, r, http.StatusUnauthorized, "Invalid authentication token", nil)
 }
 
 func (app *Application) authenticationRequired(w http.ResponseWriter, r *http.Request) {
