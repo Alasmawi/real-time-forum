@@ -42,7 +42,7 @@ type Application struct {
 	WG     sync.WaitGroup
 }
 
-// neuteredFileSystem is a cusom type which embeds the standard http.FileSystem.
+// neuteredFileSystem is a custom type which embeds the standard http.FileSystem.
 type neuteredFileSystem struct {
 	fs http.FileSystem
 }

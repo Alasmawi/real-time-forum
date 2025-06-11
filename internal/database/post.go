@@ -19,7 +19,7 @@ type Post struct {
 	Categories []Category `json:"categories"`
 }
 
-func (db *DB) GetAllCategories() (*[]Category, error) {
+func (db *DB) GetAllCategories() ([]Category, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -27,15 +27,15 @@ func (db *DB) GetAllCategories() (*[]Category, error) {
 
 	query := `SELECT id, name FROM category`
 
-	err := db.GetContext(ctx, &categories, query)
+	err := db.SelectContext(ctx, &categories, query)
 	if err != nil {
 		return nil, err
 	}
 
-	return &categories, nil
+	return categories, nil
 }
 
-func (db *DB) GetCategoryForPost(postID int) (*[]Category, error) {
+func (db *DB) GetCategoryForPost(postID int) ([]Category, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -46,12 +46,12 @@ func (db *DB) GetCategoryForPost(postID int) (*[]Category, error) {
               JOIN post_has_category pc ON c.id = pc.category_id
               WHERE pc.post_id = $1`
 
-	err := db.GetContext(ctx, &categories, query, postID)
+	err := db.SelectContext(ctx, &categories, query, postID)
 	if err != nil {
 		return nil, err
 	}
 
-	return &categories, nil
+	return categories, nil
 }
 
 func (db *DB) GetPostByID(postID int) (*Post, error) {
@@ -72,7 +72,7 @@ func (db *DB) GetPostByID(postID int) (*Post, error) {
 	return &post, nil
 }
 
-func (db *DB) GetAllPosts() (*[]Post, error) {
+func (db *DB) GetAllPosts() ([]Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -80,20 +80,14 @@ func (db *DB) GetAllPosts() (*[]Post, error) {
 
 	query := `SELECT p.id, p.content, p.created_at, p.user_id, u.username
             FROM post p            
-            JOIN user u ON p.user_id = u.id
-            
-            SELECT c.name
-            FROM category c
-            JOIN post_has_category phc ON c.id = phc.category_id
-            WHERE phc.post_id = p.id
-            `
+            JOIN user u ON p.user_id = u.id`
 
-	err := db.GetContext(ctx, &posts, query)
+	err := db.SelectContext(ctx, &posts, query)
 	if err != nil {
 		return nil, err
 	}
 
-	return &posts, nil
+	return posts, nil
 }
 
 func (db *DB) InsertPost(content string, userID int) (int, error) {

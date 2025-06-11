@@ -1,5 +1,5 @@
-import AbstractView from "./AbstarctView.js";
-import { formatTime } from "../utils/timeFormatter.js";
+import AbstractView from "./abstract-view.js";
+import { formatTime } from "../utils/time-formatter.js";
 
 export default class PostsView extends AbstractView {
     constructor() {

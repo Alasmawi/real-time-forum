@@ -31,7 +31,7 @@ func run(logger *slog.Logger) error {
 	cfg.HttpPort = env.GetInt("HTTP_PORT", 8080)
 	cfg.DB.DSN = env.GetString("DB_DSN", "db.sqlite")
 	// cfg.db.automigrate = env.GetBool("DB_AUTOMIGRATE", true)
-	cfg.JWT.SecretKey = env.GetString("JWT_SECRET_KEY", "rev3alim442itqpwlereeo5npf3h5uip")
+	// cfg.JWT.SecretKey = env.GetString("JWT_SECRET_KEY", "rev3alim442itqpwlereeo5npf3h5uip")
 
 	showVersion := flag.Bool("version", false, "display version and exit")
 
