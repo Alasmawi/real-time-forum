@@ -21,6 +21,7 @@ export default class LoginView extends AbstractView {
     }
 
     async getData() {
+        // Set up login form submission
         document.getElementById("login-form").addEventListener("submit", async (e) => {
             e.preventDefault();
             let formData = {
@@ -44,8 +45,9 @@ export default class LoginView extends AbstractView {
                     const errorData = await response.json();
                     console.error("Error:", errorData);
                 } else {
-                    const data = await response.json();
-                    console.log("Login successful:", data);
+                    console.log("Login successful");
+                    // Redirect to posts page after successful login
+                    window.location.href = "/posts";
                 }
             } catch (error) {
                 console.error("Error:", error);

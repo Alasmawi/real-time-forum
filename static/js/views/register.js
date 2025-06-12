@@ -32,6 +32,7 @@ export default class RegisterView extends AbstractView {
 
     // form on submit!
     async getData() {
+        // Set up registration form submission
         document.getElementById("register-form").addEventListener("submit", async (e) => {
             e.preventDefault();
             let formData = {
@@ -57,8 +58,9 @@ export default class RegisterView extends AbstractView {
                     const errorData = await response.json();
                     console.error("Error:", errorData);
                 } else {
-                    const data = await response.json();
-                    console.log("Registration successful:", data);
+                    console.log("Registration successful");
+                    // Redirect to login page after successful registration
+                    window.location.href = "/posts";
                 }
             } catch (error) {
                 console.error("Error:", error);

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -172,24 +171,113 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 	// Generate a new session token
 	sessionToken, err := security.GenerateToken()
 	if err != nil {
-		log.Println("Error generating UUID:", err)
-		// errData := ErrorPageData{Code: "500", ErrorMsg: "INTERNAL SERVER ERROR"}
-		// errHandler(w, r, &errData)
+		app.serverError(w, r, err)
+		return
 	}
 
 	stringToken := sessionToken.String()
 
-	//Set session cookie
+	// Store session in database
+	_, err = app.DB.InsertSession(user.ID, stringToken)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	// Set session cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
 		Value:    stringToken,
-		Expires:  time.Now().Add(1 * time.Hour), //1 hour lifetime
+		Expires:  time.Now().Add(24 * time.Hour), // 24 hour lifetime
+		HttpOnly: true,
+		Secure:   false, // Set to true in production with HTTPS
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// func (app *Application) protected(w http.ResponseWriter, r *http.Request) {
+// w.Write([]byte("This is a protected handler"))
+// }
+
+func (app *Application) logout(w http.ResponseWriter, r *http.Request) {
+	// Get session cookie
+	cookie, err := r.Cookie("session_token")
+	if err == nil {
+		// Delete session from database
+		app.DB.DeleteSession(cookie.Value)
+	}
+
+	// Clear the session cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
 		HttpOnly: true,
 	})
 
 	w.WriteHeader(http.StatusOK)
 }
 
-func (app *Application) protected(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("This is a protected handler"))
+func (app *Application) checkAuthentication(w http.ResponseWriter, r *http.Request) {
+	// Get session cookie
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		// No session cookie
+		err := response.JSON(w, http.StatusOK, map[string]interface{}{
+			"authenticated": false,
+			"redirect":      "/",
+		})
+		if err != nil {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	// Check if session value is empty
+	if cookie.Value == "" {
+		err := response.JSON(w, http.StatusOK, map[string]interface{}{
+			"authenticated": false,
+			"redirect":      "/",
+		})
+		if err != nil {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	// Validate session exists in database and get user
+	user, found, err := app.DB.GetUserBySession(cookie.Value)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	// If session doesn't exist in database
+	if !found {
+		// Delete invalid session from database if it exists
+		app.DB.DeleteSession(cookie.Value)
+		err := response.JSON(w, http.StatusOK, map[string]interface{}{
+			"authenticated": false,
+			"redirect":      "/",
+		})
+		if err != nil {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	// Valid session - return user info
+	err = response.JSON(w, http.StatusOK, map[string]interface{}{
+		"authenticated": true,
+		"user": map[string]interface{}{
+			"id":    user.ID,
+			"email": user.Email,
+		},
+		"redirect": "/posts",
+	})
+	if err != nil {
+		app.serverError(w, r, err)
+	}
 }

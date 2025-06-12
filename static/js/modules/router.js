@@ -3,6 +3,8 @@ import LoginView from "../views/login.js";
 import RegisterView from "../views/register.js";
 import PostsView from "../views/posts.js";
 import NewPostView from "../views/new-post.js";
+import ErrorView from "../views/error.js";
+import ErrorHandler from "../utils/error-handler.js";
 
 const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
 
@@ -28,6 +30,7 @@ const router = async () => {
     { path: "/chat", view: ChatroomView, },
     { path: "/posts", view: PostsView, },
     { path: "/newpost", view: NewPostView, },
+    { path: "/error/:code", view: ErrorView, },
   ];
 
   // Test each route for potential match
@@ -57,6 +60,9 @@ const router = async () => {
 window.addEventListener("popstate", router);
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Make ErrorHandler available globally
+  window.ErrorHandler = ErrorHandler;
+  
   document.body.addEventListener("click", e => {
     if (e.target.matches("[data-link]")) {
       e.preventDefault();
