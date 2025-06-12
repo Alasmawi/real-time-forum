@@ -6,15 +6,15 @@ import (
 )
 
 type Category struct {
-	Id   int    `json:"id"`
-	Name string `json:"name"`
+	Id   int    `db:"id" json:"id"`
+	Name string `db:"name" json:"name"`
 }
 
 type Post struct {
-	Id         int        `json:"id"`
-	Username   string     `json:"username"`
-	Content    string     `json:"content"`
-	CreatedAt  time.Time  `json:"created_at"`
+	Id         int        `db:"id" json:"id"`
+	Username   string     `db:"username" json:"username"`
+	Content    string     `db:"content" json:"content"`
+	CreatedAt  time.Time  `db:"created_at" json:"created_at"`
 	Comments   []Comment  `json:"comments"`
 	Categories []Category `json:"categories"`
 }

@@ -6,9 +6,9 @@ import (
 )
 
 type Comment struct {
-	Username  string    `json:"username"`
-	Content   string    `json:"content"`
-	CreatedAt time.Time `json:"created_at"`
+	Username  string    `db:"username" json:"username"`
+	Content   string    `db:"content" json:"content"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
 func (db DB) InsertComment(postID, userID int, content string) (int, error) {

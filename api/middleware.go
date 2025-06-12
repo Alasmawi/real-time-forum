@@ -10,7 +10,7 @@ import (
 	// "strings"
 	// "time"
 
-	"reboot01.com/js/forum/internal/response"
+	"reboot01.com/js/realtime-forum/internal/response"
 	// "github.com/pascaldekloe/jwt"
 	// "github.com/tomasen/realip"
 )

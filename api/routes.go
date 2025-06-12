@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	ws "reboot01.com/js/forum/internal/websocket"
+	ws "reboot01.com/js/realtime-forum/internal/websocket"
 )
 
 func (app *Application) routes() http.Handler {
@@ -23,14 +23,13 @@ func (app *Application) routes() http.Handler {
 	mux.Handle("/css/", http.StripPrefix("/css", csFileServer))
 
 	websocketManager := ws.NewWebsocketManager()
-	
+
 	// Public routes
 	mux.HandleFunc("GET /v1/status", app.status)
 	mux.HandleFunc("GET /v1/checkauth", app.checkAuthentication)
 	mux.HandleFunc("POST /v1/login", app.createAuthenticationToken)
 	mux.HandleFunc("POST /v1/register", app.createUser)
 	mux.HandleFunc("POST /v1/logout", app.logout)
-	
 
 	// Protected routes
 	// Reminder: implement custom JSON encoder for websocket messages

@@ -1,4 +1,4 @@
-module reboot01.com/js/forum
+module reboot01.com/js/realtime-forum
 
 go 1.23.0
 

@@ -7,7 +7,7 @@ import (
 	// "errors"
 	"time"
 
-	// "reboot01.com/js/forum/assets"
+	// "reboot01.com/js/realtime-forum/assets"
 
 	// "github.com/golang-migrate/migrate/v4"
 	// "github.com/golang-migrate/migrate/v4/source/iofs"

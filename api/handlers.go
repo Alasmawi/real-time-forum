@@ -7,11 +7,11 @@ import (
 	// "strconv"
 	// "time"
 
-	"reboot01.com/js/forum/internal/database"
-	"reboot01.com/js/forum/internal/request"
-	"reboot01.com/js/forum/internal/response"
-	"reboot01.com/js/forum/internal/security"
-	"reboot01.com/js/forum/internal/validator"
+	"reboot01.com/js/realtime-forum/internal/database"
+	"reboot01.com/js/realtime-forum/internal/request"
+	"reboot01.com/js/realtime-forum/internal/response"
+	"reboot01.com/js/realtime-forum/internal/security"
+	"reboot01.com/js/realtime-forum/internal/validator"
 	// "github.com/pascaldekloe/jwt"
 )
 
