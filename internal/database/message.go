@@ -33,25 +33,7 @@ VALUES ($1, $2, $3, $4)`
 	return int(id), err
 }
 
-// func (db *DB) GetMessagesForUser(userid int) ([]Message, error) {
-// ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-// defer cancel()
-
-// var messages []Message
-
-// query := `SELECT m.id, m.sender_id, m.receiver_id, m.message, m.created_at
-//   FROM message m
-//   WHERE m.receiver_id = $1`
-
-// err := db.GetContext(ctx, &messages, query, userid)
-// if err != nil {
-// return nil, err
-// }
-
-// return messages, nil
-// }
-
-func (db *DB) GetMessagesBetweenUsers(senderid, receiverid int) ([]Message, error) {
+func (db *DB) GetMessageHistory(senderid, receiverid int) ([]Message, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 

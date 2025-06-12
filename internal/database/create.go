@@ -78,7 +78,8 @@ FOREIGN KEY (post_id) REFERENCES post(id)
 	const CreateMessageTable = `
 CREATE TABLE IF NOT EXISTS message (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
-sender_id INTEGER NOT NULL ,
+sender_id INTEGER NOT NULL,
+sender_name TEXT NOT NULL,
 receiver_id INTEGER NOT NULL,
 message TEXT NOT NULL,
 created_at DATETIME default CURRENT_TIMESTAMP,
