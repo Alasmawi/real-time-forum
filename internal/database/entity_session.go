@@ -57,13 +57,8 @@ func (db *DB) DeleteSession(sessionID string) (bool, error) {
 	defer cancel()
 
 	query := `
-<<<<<<< HEAD:internal/database/session.go
-DELETE FROM session
-WHERE session_id = $1`
-=======
     DELETE FROM session
     WHERE session_id = $1`
->>>>>>> post-improvements-v3:internal/database/entity_session.go
 
 	result, err := db.ExecContext(ctx, query, sessionID)
 	if err != nil {
@@ -84,14 +79,10 @@ func (db *DB) GetUserBySession(sessionID string) (*User, bool, error) {
 
 	var userID int
 
-<<<<<<< HEAD:internal/database/session.go
-	query := `SELECT user_id FROM session WHERE session_id = $1`
-=======
 	query := `
     SELECT user_id 
     FROM session 
     WHERE session_id = $1`
->>>>>>> post-improvements-v3:internal/database/entity_session.go
 
 	err := db.GetContext(ctx, &userID, query, sessionID)
 	if errors.Is(err, sql.ErrNoRows) {
