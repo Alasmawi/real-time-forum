@@ -7,11 +7,11 @@ import (
 	// "strconv"
 	// "time"
 
-	"reboot01.com/js/forum/internal/database"
-	"reboot01.com/js/forum/internal/request"
-	"reboot01.com/js/forum/internal/response"
-	"reboot01.com/js/forum/internal/security"
-	"reboot01.com/js/forum/internal/validator"
+	"reboot01.com/js/realtime-forum/internal/database"
+	"reboot01.com/js/realtime-forum/internal/request"
+	"reboot01.com/js/realtime-forum/internal/response"
+	"reboot01.com/js/realtime-forum/internal/security"
+	"reboot01.com/js/realtime-forum/internal/validator"
 	// "github.com/pascaldekloe/jwt"
 )
 
@@ -96,7 +96,7 @@ func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Identifier string              `json:"identifier"` // email or username
+		Identifier string              `json:"identifier"`
 		Password   string              `json:"password"`
 		Validator  validator.Validator `json:"-"`
 	}
@@ -117,20 +117,20 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 	case true:
 		user, found, err = app.DB.GetUserByEmail(input.Identifier)
 		if err != nil {
-			input.Validator.CheckField(found, "Email", "Email address could not be found")
 			app.serverError(w, r, err)
 			return
 		}
+		input.Validator.CheckField(found, "Identifier", "Email address could not be found")
 	case false:
 		user, found, err = app.DB.GetUserByUsername(input.Identifier)
 		if err != nil {
-			input.Validator.CheckField(found, "Username", "Username address could not be found")
 			app.serverError(w, r, err)
 			return
 		}
+		input.Validator.CheckField(found, "Identifier", "Username could not be found")
 	}
 
-	if found {
+	if found && user != nil {
 		passwordMatches, err := security.Matches(input.Password, user.HashedPassword)
 		if err != nil {
 			app.serverError(w, r, err)
@@ -144,6 +144,34 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 		app.failedValidation(w, r, input.Validator)
 		return
 	}
+
+	// Generate a new session token
+	sessionToken, err := security.GenerateToken()
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	stringToken := sessionToken.String()
+
+	// Store session in database
+	_, err = app.DB.InsertSession(user.ID, stringToken)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	// Set session cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    stringToken,
+		Expires:  time.Now().Add(30 * time.Second),
+		HttpOnly: true,
+		Secure:   false, // Set to true in production with HTTPS
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	w.WriteHeader(http.StatusOK)
 
 	// var claims jwt.Claims
 	// claims.Subject = strconv.Itoa(user.ID)
@@ -167,34 +195,6 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 	// if err != nil {
 	// 	app.serverError(w, r, err)
 	// }
-
-	// Generate a new session token
-	sessionToken, err := security.GenerateToken()
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-
-	stringToken := sessionToken.String()
-
-	// Store session in database
-	_, err = app.DB.InsertSession(user.ID, stringToken)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-
-	// Set session cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_token",
-		Value:    stringToken,
-		Expires:  time.Now().Add(24 * time.Hour), // 24 hour lifetime
-		HttpOnly: true,
-		Secure:   false, // Set to true in production with HTTPS
-		SameSite: http.SameSiteStrictMode,
-	})
-
-	w.WriteHeader(http.StatusOK)
 }
 
 // func (app *Application) protected(w http.ResponseWriter, r *http.Request) {

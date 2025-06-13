@@ -7,8 +7,8 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"reboot01.com/js/forum/internal/response"
-	"reboot01.com/js/forum/internal/validator"
+	"reboot01.com/js/realtime-forum/internal/response"
+	"reboot01.com/js/realtime-forum/internal/validator"
 )
 
 func (app *Application) reportServerError(r *http.Request, err error) {

@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"reboot01.com/js/forum/internal/response"
+	"reboot01.com/js/realtime-forum/internal/response"
 )
 
 func (app *Application) fetchPosts(w http.ResponseWriter, r *http.Request) {

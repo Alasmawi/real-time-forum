@@ -7,10 +7,10 @@ import (
 	"os"
 	"runtime/debug"
 
-	"reboot01.com/js/forum/api"
-	"reboot01.com/js/forum/internal/database"
-	"reboot01.com/js/forum/internal/env"
-	"reboot01.com/js/forum/internal/version"
+	"reboot01.com/js/realtime-forum/api"
+	"reboot01.com/js/realtime-forum/internal/database"
+	"reboot01.com/js/realtime-forum/internal/env"
+	"reboot01.com/js/realtime-forum/internal/version"
 )
 
 func main() {

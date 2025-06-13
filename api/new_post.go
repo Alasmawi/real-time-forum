@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
-	"reboot01.com/js/forum/internal/request"
-	"reboot01.com/js/forum/internal/response"
-	"reboot01.com/js/forum/internal/validator"
+	"reboot01.com/js/realtime-forum/internal/request"
+	"reboot01.com/js/realtime-forum/internal/response"
+	"reboot01.com/js/realtime-forum/internal/validator"
 )
 
 func (app *Application) newPostHandler(w http.ResponseWriter, r *http.Request) {

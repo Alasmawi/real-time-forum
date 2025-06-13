@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 
-	"reboot01.com/js/forum/internal/database"
+	"reboot01.com/js/realtime-forum/internal/database"
 )
 
 /*
