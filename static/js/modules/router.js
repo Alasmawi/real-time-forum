@@ -22,9 +22,38 @@ const navigateTo = url => {
   router();
 };
 
+
+async function checkAuthentication() {
+  try {
+    const response = await fetch('/v1/checkauth');
+    const data = await response.json();
+    return data.authenticated;
+  } catch (error) {
+    console.error('Auth check failed:', error);
+    return false;
+  }
+}
+
 const router = async () => {
+
+  const publicRoutes = ['/', '/register'];
+  const currentPath = location.pathname;
+  
+  // Pattern matching for error routes (4xx and 5xx status codes)
+  const isErrorRoute = /^\/error\/[45]\d{2}$/.test(currentPath);
+  const isPublicRoute = publicRoutes.includes(currentPath) || isErrorRoute;
+  
+  // Check if current route needs authentication
+  if (!isPublicRoute) {
+    // Check auth before proceeding
+    const isAuthenticated = await checkAuthentication();
+    if (!isAuthenticated) {
+      navigateTo('/');  // Redirect to login
+      return;
+    }
+  }
+
   const routes = [
-    { path: "/404", view: ChatroomView, },
     { path: "/", view: LoginView },
     { path: "/register", view: RegisterView },
     { path: "/chat", view: ChatroomView, },
@@ -44,8 +73,8 @@ const router = async () => {
   let match = potentialMatches.find(potentialMatch => potentialMatch.result !== null);
 
   if (!match) {
-      match = {
-      route: routes[0],
+    match = {
+      route: { path: "/error/404", view: ErrorView },
       result: [location.pathname]
     };
   }
