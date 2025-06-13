@@ -206,6 +206,7 @@ func (app *Application) logout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
 	if err == nil {
 		// Delete session from database
+		
 		app.DB.DeleteSession(cookie.Value)
 	}
 
@@ -227,7 +228,6 @@ func (app *Application) checkAuthentication(w http.ResponseWriter, r *http.Reque
 		// No session cookie
 		err := response.JSON(w, http.StatusOK, map[string]interface{}{
 			"authenticated": false,
-			"redirect":      "/",
 		})
 		if err != nil {
 			app.serverError(w, r, err)
@@ -239,7 +239,6 @@ func (app *Application) checkAuthentication(w http.ResponseWriter, r *http.Reque
 	if cookie.Value == "" {
 		err := response.JSON(w, http.StatusOK, map[string]interface{}{
 			"authenticated": false,
-			"redirect":      "/",
 		})
 		if err != nil {
 			app.serverError(w, r, err)
@@ -248,7 +247,7 @@ func (app *Application) checkAuthentication(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Validate session exists in database and get user
-	user, found, err := app.DB.GetUserBySession(cookie.Value)
+	_, found, err := app.DB.GetUserBySession(cookie.Value)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -256,11 +255,8 @@ func (app *Application) checkAuthentication(w http.ResponseWriter, r *http.Reque
 
 	// If session doesn't exist in database
 	if !found {
-		// Delete invalid session from database if it exists
-		app.DB.DeleteSession(cookie.Value)
 		err := response.JSON(w, http.StatusOK, map[string]interface{}{
 			"authenticated": false,
-			"redirect":      "/",
 		})
 		if err != nil {
 			app.serverError(w, r, err)
@@ -271,11 +267,6 @@ func (app *Application) checkAuthentication(w http.ResponseWriter, r *http.Reque
 	// Valid session - return user info
 	err = response.JSON(w, http.StatusOK, map[string]interface{}{
 		"authenticated": true,
-		"user": map[string]interface{}{
-			"id":    user.ID,
-			"email": user.Email,
-		},
-		"redirect": "/posts",
 	})
 	if err != nil {
 		app.serverError(w, r, err)
