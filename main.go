@@ -33,45 +33,44 @@ func run(logger *slog.Logger) error {
 	// cfg.db.automigrate = env.GetBool("DB_AUTOMIGRATE", true)
 	// cfg.JWT.SecretKey = env.GetString("JWT_SECRET_KEY", "rev3alim442itqpwlereeo5npf3h5uip")
 
-showVersion := flag.Bool("version", false, "display version and exit")
-seedDB := flag.Bool("seed", true, "seed the database with sample data")
-clearDB := flag.Bool("clear", false, "clear all data from the database")
-reseedDB := flag.Bool("reseed", false, "clear and reseed the database")
+	showVersion := flag.Bool("version", false, "display version and exit")
+	// seedDB := flag.Bool("seed", true, "seed the database with sample data")
+	// clearDB := flag.Bool("clear", false, "clear all data from the database")
+	// reseedDB := flag.Bool("reseed", false, "clear and reseed the database")
 
-flag.Parse()
+	flag.Parse()
 
-if *showVersion {
-fmt.Printf("version: %s\n", version.Get())
-return nil
-}
+	if *showVersion {
+		fmt.Printf("version: %s\n", version.Get())
+		return nil
+	}
 
-db, err := database.New(cfg.DB.DSN /*, cfg.db.automigrate*/)
-if err != nil {
-return err
-}
-defer db.Close()
+	db, err := database.New(cfg.DB.DSN /*, cfg.db.automigrate*/)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
 
-// Handle database operations
-if *clearDB {
-return db.ClearDatabase()
-}
+	// if *clearDB {
+	// 	return db.ClearDatabase()
+	// }
 
-if *reseedDB {
-if err := db.ClearDatabase(); err != nil {
-return err
-}
-return db.SeedData()
-}
+	// if *reseedDB {
+	// 	if err := db.ClearDatabase(); err != nil {
+	// 		return err
+	// 	}
+	// 	return db.SeedData()
+	// }
 
-if *seedDB {
-return db.SeedIfEmpty()
-}
+	// if *seedDB {
+	// 	return db.SeedIfEmpty()
+	// }
 
-app := &api.Application{
-Config: cfg,
-DB:     db,
-Logger: logger,
-}
+	app := &api.Application{
+		Config: cfg,
+		DB:     db,
+		Logger: logger,
+	}
 
-return app.ServeHTTP()
+	return app.ServeHTTP()
 }

@@ -206,7 +206,7 @@ func (app *Application) logout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
 	if err == nil {
 		// Delete session from database
-		
+
 		app.DB.DeleteSession(cookie.Value)
 	}
 

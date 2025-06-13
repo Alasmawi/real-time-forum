@@ -51,7 +51,6 @@ func New(dsn string /*automigrate bool*/) (*DB, error) {
 		return nil, err
 	}
 
-
 	// if automigrate {
 	// 	iofsDriver, err := iofs.New(assets.EmbeddedFiles, "migrations")
 	// 	if err != nil {
