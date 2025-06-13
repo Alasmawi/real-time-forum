@@ -152,6 +152,59 @@ func (app *Application) checkAuthentication(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+// tokenAuthenticate middleware for API endpoints - uses session cookies with JSON error responses
+func (app *Application) tokenAuthenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Get session cookie
+		cookie, err := r.Cookie("session_token")
+		if err != nil {
+			// No session cookie
+			app.invalidateSessionToken(w, r)
+			return
+		}
+
+		// Check if session value is empty
+		if cookie.Value == "" {
+			// Invalid session, clear cookie and return error
+			app.invalidateSessionToken(w, r)
+			return
+		}
+
+		// Validate session exists in database and get user
+		user, found, err := app.DB.GetUserBySession(cookie.Value)
+		if err != nil {
+			app.serverError(w, r, err)
+			return
+		}
+
+		// If session doesn't exist in database, clean up and return error
+		if !found {
+			// Delete invalid session from database if it exists
+			app.DB.DeleteSession(cookie.Value)
+			app.invalidateSessionToken(w, r)
+			return
+		}
+
+		// Valid session: set user in context and continue
+		r = contextSetAuthenticatedUser(r, user)
+		next.ServeHTTP(w, r)
+	})
+}
+
+// requireSessionUser middleware - requires a valid authenticated user in context for API endpoints
+func (app *Application) requireSessionUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authenticatedUser := contextGetAuthenticatedUser(r)
+
+		if authenticatedUser == nil {
+			app.authenticationRequired(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 //func (app *Application) authenticate(next http.Handler) http.Handler {
 // return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 // 	w.Header().Add("Vary", "Authorization")

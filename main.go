@@ -34,9 +34,7 @@ func run(logger *slog.Logger) error {
 	// cfg.JWT.SecretKey = env.GetString("JWT_SECRET_KEY", "rev3alim442itqpwlereeo5npf3h5uip")
 
 	showVersion := flag.Bool("version", false, "display version and exit")
-	// seedDB := flag.Bool("seed", true, "seed the database with sample data")
-	// clearDB := flag.Bool("clear", false, "clear all data from the database")
-	// reseedDB := flag.Bool("reseed", false, "clear and reseed the database")
+	recreateDB := flag.Bool("recreate", false, "recreate the database with sample data")
 
 	flag.Parse()
 
@@ -51,20 +49,15 @@ func run(logger *slog.Logger) error {
 	}
 	defer db.Close()
 
-	// if *clearDB {
-	// 	return db.ClearDatabase()
-	// }
-
-	// if *reseedDB {
-	// 	if err := db.ClearDatabase(); err != nil {
-	// 		return err
-	// 	}
-	// 	return db.SeedData()
-	// }
-
-	// if *seedDB {
-	// 	return db.SeedIfEmpty()
-	// }
+	if *recreateDB {
+		if err := db.DropDatabase(); err != nil {
+			return err
+		}
+		if err := db.CreateDatabase(); err != nil {
+			return err
+		}
+		return db.SeedData()
+	}
 
 	app := &api.Application{
 		Config: cfg,
