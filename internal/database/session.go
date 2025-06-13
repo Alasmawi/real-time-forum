@@ -1,9 +1,9 @@
 package database
 
 import (
-"context"
-"database/sql"
-"errors"
+	"context"
+	"database/sql"
+	"errors"
 )
 
 //session needs to be generated via uuid, should be the same
@@ -53,42 +53,42 @@ WHERE session_id = $1`
 }
 
 func (db *DB) DeleteSession(sessionID string) (bool, error) {
-ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
 
-query := `
+	query := `
 DELETE FROM session
 WHERE session_id = $1`
 
-result, err := db.ExecContext(ctx, query, sessionID)
-if err != nil {
-return false, err
-}
+	result, err := db.ExecContext(ctx, query, sessionID)
+	if err != nil {
+		return false, err
+	}
 
-rowsAffected, err := result.RowsAffected()
-if err != nil {
-return false, err
-}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return false, err
+	}
 
-return rowsAffected > 0, nil
+	return rowsAffected > 0, nil
 }
 
 func (db *DB) GetUserBySession(sessionID string) (*User, bool, error) {
-ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
 
-var userID int
+	var userID int
 
-query := `SELECT user_id FROM session WHERE session_id = $1`
+	query := `SELECT user_id FROM session WHERE session_id = $1`
 
-err := db.GetContext(ctx, &userID, query, sessionID)
-if errors.Is(err, sql.ErrNoRows) {
-return nil, false, nil
-}
-if err != nil {
-return nil, false, err
-}
+	err := db.GetContext(ctx, &userID, query, sessionID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, err
+	}
 
-// Use existing GetUser function
-return db.GetUser(userID)
+	// Use existing GetUser function
+	return db.GetUser(userID)
 }

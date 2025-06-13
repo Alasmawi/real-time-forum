@@ -7,40 +7,34 @@ import (
 )
 
 func (app *Application) routes() http.Handler {
-	mux := http.NewServeMux()
+	rootMux := http.NewServeMux()
+	privateMux := http.NewServeMux()
 
-	// fileServer := http.FileServer(neuteredFileSystem{http.Dir("./static/")})
-	// mux.Handle("/static", http.NotFoundHandler())
-	// mux.Handle("/static/", http.StripPrefix("/static", fileServer))
-
-	// mux.Handle("/js", http.NotFoundHandler())
-	// mux.Handle("/css", http.NotFoundHandler())
-
+	// Static file servers
 	jsFileServer := http.FileServer(neuteredFileSystem{http.Dir("./static/js/")})
-	mux.Handle("/js/", http.StripPrefix("/js", jsFileServer))
+	rootMux.Handle("/js/", http.StripPrefix("/js", jsFileServer))
 
 	csFileServer := http.FileServer(neuteredFileSystem{http.Dir("./static/css/")})
-	mux.Handle("/css/", http.StripPrefix("/css", csFileServer))
+	rootMux.Handle("/css/", http.StripPrefix("/css", csFileServer))
 
 	websocketManager := ws.NewWebsocketManager()
-	
-	// Public routes
-	mux.HandleFunc("GET /v1/status", app.status)
-	mux.HandleFunc("GET /v1/checkauth", app.checkAuthentication)
-	mux.HandleFunc("POST /v1/login", app.createAuthenticationToken)
-	mux.HandleFunc("POST /v1/register", app.createUser)
-	mux.HandleFunc("POST /v1/logout", app.logout)
-	
 
-	// Protected routes
+	// Public routes on rootMux
+	rootMux.HandleFunc("GET /v1/status", app.status)
+	rootMux.HandleFunc("GET /v1/checkauth", app.checkAuthentication)
+	rootMux.HandleFunc("POST /v1/login", app.createAuthenticationToken)
+	rootMux.HandleFunc("POST /v1/register", app.createUser)
+	rootMux.HandleFunc("POST /v1/logout", app.logout)
+	rootMux.HandleFunc("/", app.serverIndex)
+
+	// Protected routes on privateMux (these will be under /private/ path)
 	// Reminder: implement custom JSON encoder for websocket messages
-	mux.Handle("GET /ws", app.authenticate(http.HandlerFunc(websocketManager.ServeWebSocket)))
-	mux.Handle("GET /v1/posts", app.authenticate(http.HandlerFunc(app.fetchPosts)))
-	mux.Handle("POST /v1/newpost", app.authenticate(http.HandlerFunc(app.newPostHandler)))
+	privateMux.HandleFunc("GET /ws", websocketManager.ServeWebSocket)
+	privateMux.HandleFunc("GET /v1/posts", app.fetchPosts)
+	privateMux.HandleFunc("POST /v1/newpost", app.newPostHandler)
 
-	mux.HandleFunc("/", app.serverIndex)
+	// Mount privateMux under /private/ with authentication middleware
+	rootMux.Handle("/private/", http.StripPrefix("/private", app.authenticate(privateMux)))
 
-	// mux.Handle(http.MethodGet+" /protected", app.requireAuthenticatedUser(http.HandlerFunc(app.protected)))
-
-	return app.logAccess(app.recoverPanic(mux))
+	return app.logAccess(app.recoverPanic(rootMux))
 }
