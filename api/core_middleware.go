@@ -100,6 +100,58 @@ func (app *Application) authenticate(next http.Handler) http.Handler {
 	})
 }
 
+func (app *Application) checkAuthentication(w http.ResponseWriter, r *http.Request) {
+	// Get session cookie
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		// No session cookie
+		err := response.JSON(w, http.StatusOK, map[string]interface{}{
+			"authenticated": false,
+		})
+		if err != nil {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	// Check if session value is empty
+	if cookie.Value == "" {
+		err := response.JSON(w, http.StatusOK, map[string]interface{}{
+			"authenticated": false,
+		})
+		if err != nil {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	// Validate session exists in database and get user
+	_, found, err := app.DB.GetUserBySession(cookie.Value)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	// If session doesn't exist in database
+	if !found {
+		err := response.JSON(w, http.StatusOK, map[string]interface{}{
+			"authenticated": false,
+		})
+		if err != nil {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
+	// Valid session - return user info
+	err = response.JSON(w, http.StatusOK, map[string]interface{}{
+		"authenticated": true,
+	})
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+}
+
 //func (app *Application) authenticate(next http.Handler) http.Handler {
 // return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 // 	w.Header().Add("Vary", "Authorization")
