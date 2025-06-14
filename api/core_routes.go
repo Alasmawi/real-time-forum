@@ -21,7 +21,7 @@ func (app *Application) routes() http.Handler {
 	rootMux.HandleFunc("POST /v1/login", app.createAuthenticationToken)
 	rootMux.HandleFunc("POST /v1/register", app.createUser)
 	rootMux.HandleFunc("POST /v1/logout", app.logout)
-	rootMux.HandleFunc("/", app.serverIndex)
+	rootMux.HandleFunc("/", app.serveIndex)
 
 	// Reminder: implement custom JSON encoder for websocket messages
 	websocketManager := ws.NewWebsocketManager()
