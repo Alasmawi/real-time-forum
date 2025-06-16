@@ -101,7 +101,7 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
 		Value:    stringToken,
-		Expires:  time.Now().Add(30 * time.Second),
+		Expires:  time.Now().Add(30 * time.Hour),
 		HttpOnly: true,
 		Secure:   false, // Set to true in production with HTTPS
 		SameSite: http.SameSiteStrictMode,

@@ -22,13 +22,14 @@ func (app *Application) routes() http.Handler {
 	rootMux.HandleFunc("POST /v1/register", app.createUser)
 	rootMux.HandleFunc("POST /v1/logout", app.logout)
 	rootMux.HandleFunc("/", app.serveIndex)
-
+	rootMux.HandleFunc("GET /v1/categories", app.fetchCategories)
 	// Reminder: implement custom JSON encoder for websocket messages
 	websocketManager := ws.NewWebsocketManager()
 	protectedMux.HandleFunc("GET /ws", websocketManager.ServeWebSocket)
 
-	protectedMux.HandleFunc("GET /v1/posts", app.fetchPosts)
-	protectedMux.HandleFunc("POST /v1/newpost", app.newPostHandler)
+rootMux.HandleFunc("GET /v1/posts", app.fetchPosts)
+rootMux.HandleFunc("POST /v1/comments", app.fetchPostComments)
+rootMux.HandleFunc("POST /v1/newpost", app.newPostHandler)
 
 	// Mounts protected routes with authentication middleware under /private/ prefix
 	protectedRouteHandler := http.StripPrefix("/protected", app.authenticate(protectedMux))
