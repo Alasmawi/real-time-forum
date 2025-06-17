@@ -10,17 +10,16 @@ export default class PostsView extends AbstractView {
     async getHtml() {
         return `
         <div id="posts-container" style="margin-top: 30px; border: 3px solid black; padding: 20px;">
-                <h2>Posts</h2>
-                
+            <h2>Posts</h2>
             <div id="posts-list"><!-- Posts will be dynamically inserted here --></div>
-    </div>
+        </div>
     `;
     }
 
     async getData() {
         try {
             // Fetch posts from the backend
-            const response = await fetch('/v1/posts') // Replace with your actual API endpoint
+            const response = await fetch('/protected/v1/posts') // Replace with your actual API endpoint
             if (!response.ok) {
                 throw new Error(`Failed to fetch posts: ${response.statusText}`);
             }

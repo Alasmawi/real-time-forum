@@ -25,8 +25,6 @@ var (
 
 // checkOrigin will check origin and return true if it's allowed
 func checkOrigin(r *http.Request) bool {
-
-	// Grab the request origin
 	origin := r.Header.Get("Origin")
 
 	switch origin {
@@ -79,6 +77,7 @@ func (m *WebsocketManager) routeEvent(event Event, c *Client) error {
 
 // HTTP Handler that the has the Manager that allows connections.
 func (m *WebsocketManager) ServeWebSocket(w http.ResponseWriter, r *http.Request) {
+	log.Println("Cookies:", r.Header.Get("Cookie"))
 
 	log.Println("New connection")
 	// Begins by upgrading the HTTP request

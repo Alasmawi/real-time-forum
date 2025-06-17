@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -43,9 +44,9 @@ type Application struct {
 }
 
 // neuteredFileSystem is a custom type which embeds the standard http.FileSystem.
-type neuteredFileSystem struct {
-	fs http.FileSystem
-}
+// type neuteredFileSystem struct {
+// 	fs http.FileSystem
+// }
 
 const (
 	defaultIdleTimeout    = time.Minute
@@ -97,29 +98,79 @@ func (app *Application) ServeHTTP() error {
 
 // Open checks the requested file path and determines whether it is a directory or not.
 // If it is a directory, it attempts to open an index.html file in it.
-func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
-	f, err := nfs.fs.Open(path)
-	if err != nil {
-		return nil, err
-	}
+// func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
+// 	f, err := nfs.fs.Open(path)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	s, err := f.Stat()
-	if err != nil {
-		return nil, err
-	}
+// 	s, err := f.Stat()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	if s.IsDir() {
-		index := filepath.Join(path, "index.html")
-		if _, err := nfs.fs.Open(index); err != nil {
-			// Closes the original file to avoid a file descriptor leak
-			closeErr := f.Close()
-			if closeErr != nil {
-				return nil, closeErr
-			}
+// 	if s.IsDir() {
+// 		index := filepath.Join(path, "index.html")
+// 		if _, err := nfs.fs.Open(index); err != nil {
+// 			// Closes the original file to avoid a file descriptor leak
+// 			closeErr := f.Close()
+// 			if closeErr != nil {
+// 				return nil, closeErr
+// 			}
 
-			return nil, err
+// 			return nil, err
+// 		}
+// 	}
+
+// 	return f, nil
+// }
+
+// neuteredFileHandler creates a custom file handler that returns JSON error responses
+// instead of HTML when files are not found or directories are accessed inappropriately
+func (app *Application) neuteredFileHandler(dir string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Clean the path to prevent directory traversal attacks
+		cleanPath := filepath.Clean(r.URL.Path)
+		if strings.Contains(cleanPath, "..") {
+			app.notFound(w, r)
+			return
 		}
-	}
 
-	return f, nil
+		// Build full file path
+		fullPath := filepath.Join(dir, cleanPath)
+
+		// Check if file exists and get info
+		fileInfo, err := os.Stat(fullPath)
+		if err != nil {
+			// File doesn't exist - return JSON 404
+			app.notFound(w, r)
+			return
+		}
+
+		// Neutered behavior: If it's a directory, only serve if index.html exists
+		if fileInfo.IsDir() {
+			indexPath := filepath.Join(fullPath, "index.html")
+			if _, err := os.Stat(indexPath); err != nil {
+				// No index.html in directory - return JSON 404
+				app.notFound(w, r)
+				return
+			}
+			// Serve the index.html instead
+			fullPath = indexPath
+		}
+
+		// Set appropriate content type based on file extension
+		ext := filepath.Ext(fullPath)
+		switch ext {
+		case ".js":
+			w.Header().Set("Content-Type", "application/javascript")
+		case ".css":
+			w.Header().Set("Content-Type", "text/css")
+		case ".html":
+			w.Header().Set("Content-Type", "text/html")
+		}
+
+		// Serve the file
+		http.ServeFile(w, r, fullPath)
+	}
 }
