@@ -2,8 +2,8 @@ package api
 
 import (
 	"net/http"
-	"time"
 
+	"reboot01.com/js/realtime-forum/internal/cookie"
 	"reboot01.com/js/realtime-forum/internal/database"
 	"reboot01.com/js/realtime-forum/internal/request"
 	"reboot01.com/js/realtime-forum/internal/security"
@@ -11,21 +11,11 @@ import (
 )
 
 func (app *Application) logout(w http.ResponseWriter, r *http.Request) {
-	// Get session cookie
-	cookie, err := r.Cookie("session_token")
-	if err == nil {
-		// Delete session from database
+	user := contextGetAuthenticatedUser(r)
 
-		app.DB.DeleteSession(cookie.Value)
-	}
+	app.DB.DeleteSession(user.ID)
 
-	// Clear the session cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_token",
-		Value:    "",
-		Expires:  time.Now().Add(-time.Hour),
-		HttpOnly: true,
-	})
+	app.invalidateSessionToken(w, r)
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -81,6 +71,12 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 		return
 	}
 
+	err = app.DB.DeleteSession(user.ID)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
 	// Generate a new session token
 	sessionToken, err := security.GenerateToken()
 	if err != nil {
@@ -91,21 +87,14 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 	stringToken := sessionToken.String()
 
 	// Store session in database
-	_, err = app.DB.InsertSession(user.ID, stringToken)
+	err = app.DB.InsertSession(user.ID, stringToken)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
 	}
 
 	// Set session cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_token",
-		Value:    stringToken,
-		Expires:  time.Now().Add(30 * time.Second),
-		HttpOnly: true,
-		Secure:   false, // Set to true in production with HTTPS
-		SameSite: http.SameSiteStrictMode,
-	})
+	cookie.SetDefaultSessionCookie(w, stringToken)
 
 	w.WriteHeader(http.StatusOK)
 

@@ -145,7 +145,7 @@ function chatFunctionality() {
 
         try {
             // Initialize the WebSocket connection
-            conn = new WebSocket("ws://" + document.location.host + "/ws");
+            conn = new WebSocket("ws://" + document.location.host + "/protected/ws");
 
             conn.onopen = function () {
                 console.log("WebSocket connection established.");

@@ -57,9 +57,7 @@ func (db DB) CreateDatabase() error {
         sex BOOLEAN NOT NULL,
         username TEXT NOT NULL,
         email TEXT NOT NULL,
-        hashed_password TEXT NOT NULL,
-        session_id TEXT,
-        FOREIGN KEY (session_id) REFERENCES session(session_id)
+        hashed_password TEXT NOT NULL
     );`
 
 	const CreateNotificationTable = `

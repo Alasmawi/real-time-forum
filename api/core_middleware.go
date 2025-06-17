@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"time"
 
 	// "strconv"
 	// "strings"
@@ -48,151 +47,69 @@ func (app *Application) logAccess(next http.Handler) http.Handler {
 	})
 }
 
-// authentication middleware
+func (app *Application) checkAuthenticated(w http.ResponseWriter, r *http.Request) {
+	user := contextGetAuthenticatedUser(r)
+
+	if user != nil {
+		err := response.JSON(w, http.StatusOK, map[string]interface{}{
+			"authenticated": true,
+		})
+		if err != nil {
+			app.serverError(w, r, err)
+		}
+	} else {
+		err := response.JSON(w, http.StatusOK, map[string]interface{}{
+			"authenticated": false,
+		})
+		if err != nil {
+			app.serverError(w, r, err)
+		}
+	}
+}
+
+// authenticate retrieves the session token in the request cookie.
+// If a valid session token is found, it retrieves the user associated with that session
+// and adds it to the request context.
 func (app *Application) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Get session cookie
+		// Retrieve session cookie and check if it exists
 		cookie, err := r.Cookie("session_token")
-		if err != nil {
-			// No session cookie, redirect to login
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return
+		// If there is an error (cookie does not exist), err == nil is false
+		// If there is no error (cookie exists), err == nil is true
+		hasCookie := err == nil
+
+		switch hasCookie {
+		case true:
+			if cookie.Value == "" {
+				app.invalidateSessionToken(w, r)
+				return
+			}
+
+			user, found, err := app.DB.GetUserBySession(cookie.Value)
+			if err != nil {
+				app.serverError(w, r, err)
+				return
+			}
+
+			if !found {
+				app.invalidateSessionToken(w, r)
+				return
+			}
+
+			// Adds users with valid sessions to the context
+			r = contextSetAuthenticatedUser(r, user)
+
+		case false:
+			// Potential guest logic can be added here
 		}
 
-		// Check if session value is empty
-		if cookie.Value == "" {
-			// Invalid session, clear cookie and redirect
-			http.SetCookie(w, &http.Cookie{
-				Name:     "session_token",
-				Value:    "",
-				Expires:  time.Now().Add(-time.Hour),
-				HttpOnly: true,
-			})
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return
-		}
-
-		// Validate session exists in database and get user
-		user, found, err := app.DB.GetUserBySession(cookie.Value)
-		if err != nil {
-			app.serverError(w, r, err)
-			return
-		}
-
-		// If session doesn't exist in database, clear cookie and redirect
-		if !found {
-			// Delete invalid session from database if it exists
-			app.DB.DeleteSession(cookie.Value)
-			// Clear cookie and redirect
-			http.SetCookie(w, &http.Cookie{
-				Name:     "session_token",
-				Value:    "",
-				Expires:  time.Now().Add(-time.Hour),
-				HttpOnly: true,
-			})
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return
-		}
-
-		// Valid session: set user in context and continue
-		r = contextSetAuthenticatedUser(r, user)
 		next.ServeHTTP(w, r)
 	})
 }
 
-func (app *Application) checkAuthentication(w http.ResponseWriter, r *http.Request) {
-	// Get session cookie
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		// No session cookie
-		err := response.JSON(w, http.StatusOK, map[string]interface{}{
-			"authenticated": false,
-		})
-		if err != nil {
-			app.serverError(w, r, err)
-		}
-		return
-	}
-
-	// Check if session value is empty
-	if cookie.Value == "" {
-		err := response.JSON(w, http.StatusOK, map[string]interface{}{
-			"authenticated": false,
-		})
-		if err != nil {
-			app.serverError(w, r, err)
-		}
-		return
-	}
-
-	// Validate session exists in database and get user
-	_, found, err := app.DB.GetUserBySession(cookie.Value)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-
-	// If session doesn't exist in database
-	if !found {
-		err := response.JSON(w, http.StatusOK, map[string]interface{}{
-			"authenticated": false,
-		})
-		if err != nil {
-			app.serverError(w, r, err)
-		}
-		return
-	}
-
-	// Valid session - return user info
-	err = response.JSON(w, http.StatusOK, map[string]interface{}{
-		"authenticated": true,
-	})
-	if err != nil {
-		app.serverError(w, r, err)
-	}
-}
-
-// tokenAuthenticate middleware for API endpoints - uses session cookies with JSON error responses
-func (app *Application) tokenAuthenticate(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Get session cookie
-		cookie, err := r.Cookie("session_token")
-		if err != nil {
-			// No session cookie
-			app.invalidateSessionToken(w, r)
-			return
-		}
-
-		// Check if session value is empty
-		if cookie.Value == "" {
-			// Invalid session, clear cookie and return error
-			app.invalidateSessionToken(w, r)
-			return
-		}
-
-		// Validate session exists in database and get user
-		user, found, err := app.DB.GetUserBySession(cookie.Value)
-		if err != nil {
-			app.serverError(w, r, err)
-			return
-		}
-
-		// If session doesn't exist in database, clean up and return error
-		if !found {
-			// Delete invalid session from database if it exists
-			app.DB.DeleteSession(cookie.Value)
-			app.invalidateSessionToken(w, r)
-			return
-		}
-
-		// Valid session: set user in context and continue
-		r = contextSetAuthenticatedUser(r, user)
-		next.ServeHTTP(w, r)
-	})
-}
-
-// requireSessionUser middleware - requires a valid authenticated user in context for API endpoints
-func (app *Application) requireSessionUser(next http.Handler) http.Handler {
+// Authorize requires an authenticated user in context to grant access to the next handler.
+// If the user is not authenticated, it responds with a 401 Unauthorized status.
+func (app *Application) authorize(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authenticatedUser := contextGetAuthenticatedUser(r)
 

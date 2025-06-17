@@ -10,18 +10,13 @@ func (app *Application) routes() http.Handler {
 	rootMux := http.NewServeMux()
 	protectedMux := http.NewServeMux()
 
-	jsFileServer := http.FileServer(neuteredFileSystem{http.Dir("./static/js/")})
-	rootMux.Handle("/js/", http.StripPrefix("/js", jsFileServer))
-
-	csFileServer := http.FileServer(neuteredFileSystem{http.Dir("./static/css/")})
-	rootMux.Handle("/css/", http.StripPrefix("/css", csFileServer))
+	rootMux.HandleFunc("/js/", http.StripPrefix("/js/", app.neuteredFileHandler("./static/js/")).ServeHTTP)
+	rootMux.HandleFunc("/css/", http.StripPrefix("/css/", app.neuteredFileHandler("./static/css/")).ServeHTTP)
 
 	rootMux.HandleFunc("GET /v1/status", app.status)
-	rootMux.HandleFunc("GET /v1/checkauth", app.checkAuthentication)
+	rootMux.HandleFunc("GET /v1/checkauth", app.checkAuthenticated)
 	rootMux.HandleFunc("POST /v1/login", app.createAuthenticationToken)
 	rootMux.HandleFunc("POST /v1/register", app.createUser)
-	rootMux.HandleFunc("POST /v1/logout", app.logout)
-	rootMux.HandleFunc("/", app.serveIndex)
 
 	// Reminder: implement custom JSON encoder for websocket messages
 	websocketManager := ws.NewWebsocketManager()
@@ -29,10 +24,13 @@ func (app *Application) routes() http.Handler {
 
 	protectedMux.HandleFunc("GET /v1/posts", app.fetchPosts)
 	protectedMux.HandleFunc("POST /v1/newpost", app.newPostHandler)
+	protectedMux.HandleFunc("POST /v1/logout", app.logout)
 
-	// Mounts protected routes with authentication middleware under /private/ prefix
-	protectedRouteHandler := http.StripPrefix("/protected", app.authenticate(protectedMux))
+	// Mounts protected routes with a middleware under /protected/ prefix
+	protectedRouteHandler := http.StripPrefix("/protected", app.authorize(protectedMux))
 	rootMux.Handle("/protected/", protectedRouteHandler)
 
-	return app.logAccess(app.recoverPanic(rootMux))
+	rootMux.HandleFunc("/", app.serveIndex)
+
+	return app.logAccess(app.recoverPanic(app.authenticate(rootMux)))
 }

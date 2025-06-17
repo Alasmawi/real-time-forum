@@ -8,15 +8,14 @@ import (
 )
 
 type User struct {
-	ID             int     `db:"id" json:"id"`
-	FName          string  `db:"f_name" json:"-"`
-	LName          string  `db:"l_name" json:"-"`
-	Age            int     `db:"age" json:"-"`
-	Sex            bool    `db:"sex" json:"-"`
-	Username       string  `db:"username" json:"username"`
-	Email          string  `db:"email" json:"email"`
-	HashedPassword string  `db:"hashed_password" json:"-"`
-	SessionID      *string `db:"session_id" json:"-"`
+	ID             int    `db:"id" json:"id"`
+	FName          string `db:"f_name" json:"-"`
+	LName          string `db:"l_name" json:"-"`
+	Age            int    `db:"age" json:"-"`
+	Sex            bool   `db:"sex" json:"-"`
+	Username       string `db:"username" json:"username"`
+	Email          string `db:"email" json:"email"`
+	HashedPassword string `db:"hashed_password" json:"-"`
 }
 
 func (db *DB) InsertUser(email, hashedPassword string) (int, error) {
@@ -40,7 +39,7 @@ func (db *DB) InsertUser(email, hashedPassword string) (int, error) {
 	return int(id), err
 }
 
-func (db *DB) GetUser(id int) (*User, bool, error) {
+func (db *DB) GetUserById(id int) (*User, bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -88,6 +87,29 @@ func (db *DB) GetUserByUsername(username string) (*User, bool, error) {
 	return &user, true, err
 }
 
+func (db *DB) GetUserBySession(sessionID string) (*User, bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
+
+	var userID int
+
+	query := `
+    SELECT user_id 
+    FROM session 
+    WHERE session_id = $1`
+
+	err := db.GetContext(ctx, &userID, query, sessionID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, err
+	}
+
+	// Use existing GetUser function
+	return db.GetUserById(userID)
+}
+
 func (db *DB) UpdateUserHashedPassword(id int, hashedPassword string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
@@ -106,7 +128,7 @@ func (db *DB) GetAllUsers() ([]User, error) {
 
 	query := `SELECT * FROM user ORDER BY username ASC`
 
-	err := db.GetContext(ctx, &users, query)
+	err := db.SelectContext(ctx, &users, query)
 	if err != nil {
 		return nil, err
 	}

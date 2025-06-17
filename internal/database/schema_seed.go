@@ -15,11 +15,6 @@ func (db DB) SeedData() error {
 		return err
 	}
 
-	// insertUsers := []string{
-	// 	`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_hashed_password, session_id)
-	// 	VALUES ('John', 'Doe', 25, 1, 'johndoe', 'john.doe@example.com', '` + hashedPassword + `', NULL);`,
-	// }
-
 	insertCategories := []string{
 		`INSERT INTO category (name) VALUES ('Technology')`,
 		`INSERT INTO category (name) VALUES ('Sports')`,
@@ -34,21 +29,21 @@ func (db DB) SeedData() error {
 	}
 
 	insertUsers := []string{
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password, session_id) VALUES ('John', 'Doe', 25, 1, 'johndoe', 'john.doe@example.com', '` + hashedPassword + `', NULL);`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Jane', 'Smith', 28, 0, 'janesmith', 'jane.smith@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Mike', 'Johnson', 32, 1, 'mikejohnson', 'mike.johnson@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Sarah', 'Williams', 24, 0, 'sarahwilliams', 'sarah.williams@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('David', 'Brown', 30, 1, 'davidbrown', 'david.brown@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Emily', 'Davis', 26, 0, 'emilydavis', 'emily.davis@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Chris', 'Wilson', 29, 1, 'chriswilson', 'chris.wilson@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Lisa', 'Moore', 27, 0, 'lisamoore', 'lisa.moore@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Tom', 'Taylor', 31, 1, 'tomtaylor', 'tom.taylor@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Anna', 'Anderson', 23, 0, 'annaanderson', 'anna.anderson@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Mark', 'Thomas', 35, 1, 'markthomas', 'mark.thomas@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Jessica', 'Jackson', 22, 0, 'jessicajackson', 'jessica.jackson@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Ryan', 'White', 33, 1, 'ryanwhite', 'ryan.white@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Amanda', 'Harris', 28, 0, 'amandaharris', 'amanda.harris@email.com', '` + hashedPassword + `', NULL)`,
-		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Kevin', 'Martin', 26, 1, 'kevinmartin', 'kevin.martin@email.com', '` + hashedPassword + `', NULL)`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('John', 'Doe', 25, 1, 'johndoe', 'john.doe@example.com', '` + hashedPassword + `');`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Jane', 'Smith', 28, 0, 'janesmith', 'jane.smith@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Mike', 'Johnson', 32, 1, 'mikejohnson', 'mike.johnson@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Sarah', 'Williams', 24, 0, 'sarahwilliams', 'sarah.williams@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('David', 'Brown', 30, 1, 'davidbrown', 'david.brown@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Emily', 'Davis', 26, 0, 'emilydavis', 'emily.davis@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Chris', 'Wilson', 29, 1, 'chriswilson', 'chris.wilson@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Lisa', 'Moore', 27, 0, 'lisamoore', 'lisa.moore@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Tom', 'Taylor', 31, 1, 'tomtaylor', 'tom.taylor@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Anna', 'Anderson', 23, 0, 'annaanderson', 'anna.anderson@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Mark', 'Thomas', 35, 1, 'markthomas', 'mark.thomas@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Jessica', 'Jackson', 22, 0, 'jessicajackson', 'jessica.jackson@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Ryan', 'White', 33, 1, 'ryanwhite', 'ryan.white@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Amanda', 'Harris', 28, 0, 'amandaharris', 'amanda.harris@email.com', '` + hashedPassword + `')`,
+		`INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password) VALUES ('Kevin', 'Martin', 26, 1, 'kevinmartin', 'kevin.martin@email.com', '` + hashedPassword + `')`,
 	}
 
 	insertPosts := []string{

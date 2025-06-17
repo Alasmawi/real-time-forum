@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"runtime/debug"
 	"strings"
-	"time"
 
+	"reboot01.com/js/realtime-forum/internal/cookie"
 	"reboot01.com/js/realtime-forum/internal/response"
 	"reboot01.com/js/realtime-forum/internal/validator"
 )
@@ -71,12 +71,14 @@ func (app *Application) failedValidation(w http.ResponseWriter, r *http.Request,
 
 func (app *Application) invalidateSessionToken(w http.ResponseWriter, r *http.Request) {
 	// Clear the session cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_token",
-		Value:    "",
-		Expires:  time.Now().Add(-time.Hour),
-		HttpOnly: true,
-	})
+	// http.SetCookie(w, &http.Cookie{
+	// 	Name:     "session_token",
+	// 	Value:    "",
+	// 	Expires:  time.Now().Add(-time.Hour),
+	// 	HttpOnly: true,
+	// })
+
+	cookie.ClearDefaultSessionCookie(w)
 
 	app.errorMessage(w, r, http.StatusUnauthorized, "Invalid session token", nil)
 }
