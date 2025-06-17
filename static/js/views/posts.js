@@ -1,5 +1,6 @@
 import AbstractView from "./abstract-view.js";
 import { formatTime } from "../utils/time-formatter.js";
+import { CommentsManager } from "../modules/comments.js";
 
 export default class PostsView extends AbstractView {
     constructor() {
@@ -8,6 +9,7 @@ export default class PostsView extends AbstractView {
         this.categories = [];
         this.posts = [];
         this.selectedCategory = 'all';
+        this.commentsManager = new CommentsManager();
     }
 
     async getHtml() {
@@ -127,32 +129,13 @@ export default class PostsView extends AbstractView {
                 </div>
                 
                 <div class="post-comments" id="comments-${post.id}" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
-                    ${this.generateCommentsHTML(post.comments)}
+                    ${this.commentsManager.generateCommentsHTML(post.comments)}
+                    ${this.commentsManager.generateCommentForm(post.id)}
                 </div>
             </div>
         `).join('');
     }
 
-    generateCommentsHTML(comments) {
-        if (!comments || comments.length === 0) {
-            return '<p style="color: #666; font-style: italic;">No comments yet.</p>';
-        }
-
-        return `
-            <h5 style="margin-bottom: 10px;">Comments (${comments.length})</h5>
-            ${comments.map(comment => `
-                <div class="comment-item" style="background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 3px; border-left: 3px solid #007bff;">
-                    <div class="comment-header" style="margin-bottom: 5px;">
-                        <strong>${comment.username}</strong>
-                        <small style="color: #666; margin-left: 10px;">${formatTime(comment.created_at)}</small>
-                    </div>
-                    <div class="comment-content">
-                        <p style="margin: 0;">${comment.content}</p>
-                    </div>
-                </div>
-            `).join('')}
-        `;
-    }
 
     filterPosts() {
         if (this.selectedCategory === 'all') {
@@ -190,13 +173,17 @@ export default class PostsView extends AbstractView {
 
         // Post click event listeners for expanding comments
         this.attachPostClickListeners();
+        
+        // Comment form event listeners
+        this.commentsManager.attachCommentFormListeners();
     }
 
     attachPostClickListeners() {
         document.querySelectorAll('.post-item').forEach(postElement => {
             postElement.addEventListener('click', async (e) => {
-                // Don't trigger if clicking on category buttons
-                if (e.target.classList.contains('category-filter')) {
+                // Don't trigger if clicking on category buttons or comment form elements
+                if (e.target.classList.contains('category-filter') || 
+                    this.commentsManager.isCommentFormElement(e.target)) {
                     return;
                 }
                 
@@ -204,33 +191,10 @@ export default class PostsView extends AbstractView {
                 const commentsDiv = document.getElementById(`comments-${postId}`);
                 
                 if (commentsDiv.style.display === 'none') {
-                    // Show loading state
-                    commentsDiv.innerHTML = '<p style="color: #666; font-style: italic;">Loading comments...</p>';
                     commentsDiv.style.display = 'block';
                     postElement.style.backgroundColor = '#f8f9fa';
                     
-                    // Fetch comments from the backend
-                    try {
-                        const response = await fetch('/protected/v1/comments', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                post_id: postId
-                            })
-                        });
-                        
-                        if (response.ok) {
-                            const comments = await response.json();
-                            commentsDiv.innerHTML = this.generateCommentsHTML(comments);
-                        } else {
-                            commentsDiv.innerHTML = '<p style="color: #dc3545; font-style: italic;">Failed to load comments.</p>';
-                        }
-                    } catch (error) {
-                        console.error('Error loading comments:', error);
-                        commentsDiv.innerHTML = '<p style="color: #dc3545; font-style: italic;">Error loading comments.</p>';
-                    }
+                    await this.commentsManager.displayCommentsForPost(postId, commentsDiv);
                 } else {
                     commentsDiv.style.display = 'none';
                     postElement.style.backgroundColor = '#fff';
@@ -251,4 +215,5 @@ export default class PostsView extends AbstractView {
             });
         });
     }
+
 }

@@ -23,6 +23,7 @@ func (app *Application) routes() http.Handler {
 
 	protectedMux.HandleFunc("GET /v1/posts", app.fetchPosts)
 	protectedMux.HandleFunc("POST /v1/comments", app.fetchPostComments)
+	protectedMux.HandleFunc("POST /v1/newcomment", app.newCommentHandler)
 	protectedMux.HandleFunc("GET /v1/categories", app.fetchCategories)
 	protectedMux.HandleFunc("POST /v1/newpost", app.newPostHandler)
 	protectedMux.HandleFunc("POST /v1/logout", app.logout)

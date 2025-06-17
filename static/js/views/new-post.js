@@ -9,14 +9,13 @@ export default class NewPostView extends AbstractView {
 
     async getHtml() {
         await this.loadCategories();
-        console.log("Categories when generating HTML:", this.categories); // Debug log
         
         return `
         <div style="border: 3px solid black; margin-top: 30px; padding: 20px;">
             <h2>Create New Post</h2>
             <form id="newpost-form">
-                <label for="content">Content:</label><br>
-                <textarea id="content" name="content" rows="6" cols="50" placeholder="What's on your mind?" required></textarea><br><br>
+                <label for="post-content">Content:</label><br>
+                <textarea id="post-content" name="content" rows="6" cols="50" placeholder="What's on your mind?" required></textarea><br><br>
                 
                 <label for="categories">Categories:</label><br>
                 <div id="categories-container">
@@ -39,10 +38,6 @@ export default class NewPostView extends AbstractView {
             
             if (response.ok) {
                 const data = await response.json();
-                console.log("Categories response:", data); // Debug log
-                console.log("Categories type:", typeof data); // Debug log
-                console.log("Categories is array:", Array.isArray(data)); // Debug log
-                // Backend returns array of category objects directly
                 this.categories = data;
             } else {
                 console.error("Failed to load categories from API, status:", response.status);
@@ -66,40 +61,20 @@ export default class NewPostView extends AbstractView {
     }
 
     async getData() {
-        // Ensure categories are loaded if they weren't during getHtml()
-        if (this.categories.length === 0) {
-            await this.loadCategories();
-            // Re-render categories section if categories were loaded
-            if (this.categories.length > 0) {
-                const categoriesContainer = document.getElementById("categories-container");
-                if (categoriesContainer) {
-                    categoriesContainer.innerHTML = this.generateCategoryCheckboxes();
-                }
-            }
-        }
-
         document.getElementById("newpost-form").addEventListener("submit", async (e) => {
             e.preventDefault();
             
-            const content = document.getElementById("content").value.trim();
-            const categoryCheckboxes = document.querySelectorAll('input[name="categories"]:checked');
-            const categories = Array.from(categoryCheckboxes).map(checkbox => parseInt(checkbox.value));
-            
-            if (!content) {
+            let formData = {
+                "content": document.getElementById("post-content").value,
+                "categories": Array.from(document.querySelectorAll('input[name="categories"]:checked')).map(checkbox => parseInt(checkbox.value))
+            };
+
+            console.log("Form Data:", formData);
+
+            if (!formData.content) {
                 this.showError("Content is required");
                 return;
             }
-            
-            // Optional: Check if categories are available
-            if (this.categories.length === 0) {
-                this.showError("Categories are not available. Please try again later.");
-                return;
-            }
-            
-            let formData = {
-                "content": content,
-                "categories": categories
-            };
 
             try {
                 const response = await fetch("/protected/v1/newpost", {
@@ -110,11 +85,14 @@ export default class NewPostView extends AbstractView {
                     body: JSON.stringify(formData),
                 });
 
+                console.log("Response:", response);
+
                 if (!response.ok) {
                     const errorData = await response.json();
+                    console.error("Error:", errorData);
                     this.showError("Failed to create post: " + (errorData.Error || "Unknown error"));
                 } else {
-                    const data = await response.json();
+                    console.log("Post created successfully");
                     this.showSuccess("Post created successfully!");
                     document.getElementById("newpost-form").reset();
                     
