@@ -9,6 +9,7 @@ export default class NewPostView extends AbstractView {
 
     async getHtml() {
         await this.loadCategories();
+        console.log("Categories when generating HTML:", this.categories); // Debug log
         
         return `
         <div style="border: 3px solid black; margin-top: 30px; padding: 20px;">
@@ -38,9 +39,13 @@ export default class NewPostView extends AbstractView {
             
             if (response.ok) {
                 const data = await response.json();
-                this.categories = data.categories || [];
+                console.log("Categories response:", data); // Debug log
+                console.log("Categories type:", typeof data); // Debug log
+                console.log("Categories is array:", Array.isArray(data)); // Debug log
+                // Backend returns array of category objects directly
+                this.categories = data;
             } else {
-                console.error("Failed to load categories from API");
+                console.error("Failed to load categories from API, status:", response.status);
                 this.categories = [];
             }
         } catch (error) {
@@ -61,6 +66,18 @@ export default class NewPostView extends AbstractView {
     }
 
     async getData() {
+        // Ensure categories are loaded if they weren't during getHtml()
+        if (this.categories.length === 0) {
+            await this.loadCategories();
+            // Re-render categories section if categories were loaded
+            if (this.categories.length > 0) {
+                const categoriesContainer = document.getElementById("categories-container");
+                if (categoriesContainer) {
+                    categoriesContainer.innerHTML = this.generateCategoryCheckboxes();
+                }
+            }
+        }
+
         document.getElementById("newpost-form").addEventListener("submit", async (e) => {
             e.preventDefault();
             
@@ -85,7 +102,7 @@ export default class NewPostView extends AbstractView {
             };
 
             try {
-                const response = await fetch("/v1/post", {
+                const response = await fetch("/v1/newpost", {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",

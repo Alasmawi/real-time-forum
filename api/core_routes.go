@@ -17,12 +17,13 @@ func (app *Application) routes() http.Handler {
 	rootMux.HandleFunc("GET /v1/checkauth", app.checkAuthenticated)
 	rootMux.HandleFunc("POST /v1/login", app.createAuthenticationToken)
 	rootMux.HandleFunc("POST /v1/register", app.createUser)
-
 	// Reminder: implement custom JSON encoder for websocket messages
 	websocketManager := ws.NewWebsocketManager()
 	protectedMux.HandleFunc("GET /ws", websocketManager.ServeWebSocket)
 
 	protectedMux.HandleFunc("GET /v1/posts", app.fetchPosts)
+	protectedMux.HandleFunc("GET /v1/comments", app.fetchPostComments)
+	protectedMux.HandleFunc("GET /v1/categories", app.fetchCategories)
 	protectedMux.HandleFunc("POST /v1/newpost", app.newPostHandler)
 	protectedMux.HandleFunc("POST /v1/logout", app.logout)
 

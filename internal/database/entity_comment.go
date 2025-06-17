@@ -33,22 +33,22 @@ func (db DB) InsertComment(postID, userID int, content string) (int, error) {
 }
 
 func (db *DB) GetCommentsForPost(postID int) ([]Comment, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-	defer cancel()
+ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+defer cancel()
 
-	var comments []Comment
+var comments []Comment
 
-	query := `
-    SELECT c.id, c.post_id, c.user_id, u.username, c.content, c.created_at
+query := `
+    SELECT u.username, c.content, c.created_at
     FROM comment c
     JOIN user u ON c.user_id = u.id
     WHERE c.post_id = $1
-    ORDER BY created_at ASC`
+    ORDER BY c.created_at ASC`
 
-	err := db.GetContext(ctx, &comments, query, postID)
-	if err != nil {
-		return nil, err
-	}
+err := db.SelectContext(ctx, &comments, query, postID)
+if err != nil {
+return nil, err
+}
 
-	return comments, nil
+return comments, nil
 }

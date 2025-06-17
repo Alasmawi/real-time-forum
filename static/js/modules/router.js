@@ -3,6 +3,7 @@ import LoginView from "../views/login.js";
 import RegisterView from "../views/register.js";
 import PostsView from "../views/posts.js";
 import NewPostView from "../views/new-post.js";
+import CategoriesView from "../views/categories.js";
 import ErrorView from "../views/error.js";
 import LogoutView from "../views/logout.js";
 import ErrorHandler from "../utils/error-handler.js";

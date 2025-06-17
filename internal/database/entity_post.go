@@ -39,14 +39,29 @@ func (db *DB) GetAllPosts() ([]Post, error) {
 
 	var posts []Post
 
+	// Get all posts with usernames from the user table
 	query := `
-    SELECT p.id, p.content, p.created_at, p.user_id, u.username
-    FROM post p            
-    JOIN user u ON p.user_id = u.id`
+        SELECT p.id, u.username, p.content, p.created_at
+        FROM post p            
+        JOIN user u ON p.user_id = u.id
+        ORDER BY p.created_at DESC`
 
 	err := db.SelectContext(ctx, &posts, query)
 	if err != nil {
 		return nil, err
+	}
+
+	// For each post, get its categories only (not comments)
+	for i := range posts {
+		// Get categories for this post
+		categories, err := db.GetCategoryForPost(posts[i].Id)
+		if err != nil {
+			return nil, err
+		}
+		posts[i].Categories = categories
+
+		// Initialize empty comments slice - comments will be loaded separately when needed
+		posts[i].Comments = []Comment{}
 	}
 
 	return posts, nil
