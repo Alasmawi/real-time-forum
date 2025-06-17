@@ -35,7 +35,7 @@ export default class NewPostView extends AbstractView {
 
     async loadCategories() {
         try {
-            const response = await fetch("/protected/v1/posts");
+            const response = await fetch("/protected/v1/categories");
             
             if (response.ok) {
                 const data = await response.json();
@@ -102,7 +102,7 @@ export default class NewPostView extends AbstractView {
             };
 
             try {
-                const response = await fetch("/v1/newpost", {
+                const response = await fetch("/protected/v1/newpost", {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",

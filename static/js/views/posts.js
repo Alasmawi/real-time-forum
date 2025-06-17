@@ -52,7 +52,7 @@ export default class PostsView extends AbstractView {
 
     async loadPosts() {
         try {
-            const response = await fetch('/v1/posts', {
+            const response = await fetch('/protected/v1/posts', {
                 credentials: 'include'
             });
             if (response.ok) {
@@ -211,7 +211,7 @@ export default class PostsView extends AbstractView {
                     
                     // Fetch comments from the backend
                     try {
-                        const response = await fetch('/v1/comments', {
+                        const response = await fetch('/protected/v1/comments', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
