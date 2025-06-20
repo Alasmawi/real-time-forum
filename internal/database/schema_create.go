@@ -44,7 +44,7 @@ func (db DB) CreateDatabase() error {
 	const CreateSessionTable = `
     CREATE TABLE IF NOT EXISTS session (
         session_id TEXT PRIMARY KEY,
-        user_id INTEGER NOT NULL UNIQUE,
+        user_id INTEGER NOT NULL,
         FOREIGN KEY (user_id) REFERENCES user(id)
     );`
 
@@ -55,7 +55,7 @@ func (db DB) CreateDatabase() error {
         l_name TEXT NOT NULL,
         age INTEGER NOT NULL,
         sex BOOLEAN NOT NULL,
-        username TEXT NOT NULL,
+        username TEXT NOT NULL UNIQUE,
         email TEXT NOT NULL,
         hashed_password TEXT NOT NULL
     );`

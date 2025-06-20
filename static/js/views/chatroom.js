@@ -1,5 +1,5 @@
 import AbstractView from "./abstract-view.js";
-import { chatFunctionality } from "../modules/chat-websockets.js";
+import { chatFunctionality } from "../modules/websockets/chatroom.js";
 
 export default class ChatroomView extends AbstractView {
     constructor() {
@@ -11,6 +11,10 @@ export default class ChatroomView extends AbstractView {
         return `
         <div class="center">
             <h1>Amazing Chat Application</h1>
+            <div class="connection-status-container">
+                <span>Connection Status: </span>
+                <span id="connection-status" class="connection-status connecting">connecting</span>
+            </div>
             <h3 id="chat-header">Currently in chat: general</h3>
 
             <!--
