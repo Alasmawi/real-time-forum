@@ -8,10 +8,8 @@ export default class NewPostView extends AbstractView {
     }
 
     async getHtml() {
-        await this.loadCategories();
-        
         return `
-        <div style="border: 3px solid black; margin-top: 30px; padding: 20px;">
+        <div class="new-post-container">
             <h2>Create New Post</h2>
             <form id="newpost-form">
                 <label for="post-content">Content:</label><br>
@@ -19,17 +17,23 @@ export default class NewPostView extends AbstractView {
                 
                 <label for="categories">Categories:</label><br>
                 <div id="categories-container">
-                    ${this.generateCategoryCheckboxes()}
+                    <!-- Categories will be loaded here -->
                 </div><br>
                 
                 <input type="submit" value="Create Post">
                 <button type="button" id="cancel-btn">Cancel</button>
             </form>
             
-            <div id="message" style="margin-top: 20px; color: green;"></div>
-            <div id="error-message" style="margin-top: 20px; color: red;"></div>
+            <div id="message"></div>
+            <div id="error-message"></div>
         </div>
         `;
+    }
+
+    async getData() {
+        await this.loadCategories();
+        this.renderCategories();
+        this.attachEventListeners();
     }
 
     async loadCategories() {
@@ -49,69 +53,79 @@ export default class NewPostView extends AbstractView {
         }
     }
 
-    generateCategoryCheckboxes() {
+    renderCategories() {
+        const container = document.getElementById("categories-container");
+        
         if (this.categories.length === 0) {
-            return '<p style="color: red;">Unable to load categories. Please try again later.</p>';
+            container.innerHTML = '<p class="error-text">Unable to load categories. Please try again later.</p>';
+            return;
         }
         
-        return this.categories.map(category => `
+        container.innerHTML = this.categories.map(category => `
             <input type="checkbox" id="category-${category.id}" name="categories" value="${category.id}">
             <label for="category-${category.id}">${category.name}</label><br>
         `).join('');
     }
 
-    async getData() {
+    attachEventListeners() {
         document.getElementById("newpost-form").addEventListener("submit", async (e) => {
             e.preventDefault();
-            
-            let formData = {
-                "content": document.getElementById("post-content").value,
-                "categories": Array.from(document.querySelectorAll('input[name="categories"]:checked')).map(checkbox => parseInt(checkbox.value))
-            };
-
-            console.log("Form Data:", formData);
-
-            if (!formData.content) {
-                this.showError("Content is required");
-                return;
-            }
-
-            try {
-                const response = await fetch("/protected/v1/newpost", {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(formData),
-                });
-
-                console.log("Response:", response);
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error("Error:", errorData);
-                    this.showError("Failed to create post: " + (errorData.Error || "Unknown error"));
-                } else {
-                    console.log("Post created successfully");
-                    this.showSuccess("Post created successfully!");
-                    document.getElementById("newpost-form").reset();
-                    
-                    setTimeout(() => {
-                        window.history.pushState(null, null, "/posts");
-                        window.dispatchEvent(new PopStateEvent('popstate'));
-                    }, 2000);
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                this.showError("An error occurred while creating the post.");
-            }
+            await this.handleFormSubmit();
         });
 
         document.getElementById("cancel-btn").addEventListener("click", (e) => {
             e.preventDefault();
-            window.history.pushState(null, null, "/posts");
-            window.dispatchEvent(new PopStateEvent('popstate'));
+            this.handleCancel();
         });
+    }
+
+    async handleFormSubmit() {
+        let formData = {
+            "content": document.getElementById("post-content").value,
+            "categories": Array.from(document.querySelectorAll('input[name="categories"]:checked')).map(checkbox => parseInt(checkbox.value))
+        };
+
+        console.log("Form Data:", formData);
+
+        if (!formData.content) {
+            this.showError("Content is required");
+            return;
+        }
+
+        try {
+            const response = await fetch("/protected/v1/newpost", {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+
+            console.log("Response:", response);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Error:", errorData);
+                this.showError("Failed to create post: " + (errorData.Error || "Unknown error"));
+            } else {
+                console.log("Post created successfully");
+                this.showSuccess("Post created successfully!");
+                document.getElementById("newpost-form").reset();
+                
+                setTimeout(() => {
+                    window.history.pushState(null, null, "/posts");
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                }, 2000);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            this.showError("An error occurred while creating the post.");
+        }
+    }
+
+    handleCancel() {
+        window.history.pushState(null, null, "/posts");
+        window.dispatchEvent(new PopStateEvent('popstate'));
     }
 
     showError(message) {

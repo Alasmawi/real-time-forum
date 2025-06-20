@@ -33,12 +33,16 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 		return
 	}
 
-	input.Validator.CheckField(input.Identifier != "", "Identifier", "Email or username is required")
-	input.Validator.CheckField(input.Password != "", "Password", "Password is required")
+	input.Validator.CheckField(input.Identifier != "", "identifier", "Email or username is required")
+	input.Validator.CheckField(input.Password != "", "password", "Password is required")
 
 	var user *database.User
 	var found bool
 
+	if input.Validator.HasErrors() {
+		app.failedValidation(w, r, input.Validator)
+		return
+	}
 	switch validator.IsEmail(input.Identifier) {
 	case true:
 		user, found, err = app.DB.GetUserByEmail(input.Identifier)

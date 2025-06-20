@@ -3,18 +3,22 @@ package api
 import (
 	"net/http"
 
+	"reboot01.com/js/realtime-forum/internal/database"
 	"reboot01.com/js/realtime-forum/internal/request"
 	"reboot01.com/js/realtime-forum/internal/security"
 	"reboot01.com/js/realtime-forum/internal/validator"
 )
 
 func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
+	
 	var input struct {
+		F_name    string              `json:"f_name"`
+		L_name    string              `json:"l_name"`
 		Username  string              `json:"username"`
 		Email     string              `json:"email"`
 		Password  string              `json:"password"`
-		Age       string              `json:"age"`
-		Sex       string              `json:"sex"`
+		Age       int                 `json:"age"`
+		Sex       bool                `json:"sex"`
 		Validator validator.Validator `json:"-"`
 	}
 
@@ -35,6 +39,13 @@ func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 		return
 	}
+
+	input.Validator.CheckField(input.F_name != "", "First-name", "First name is required")
+	input.Validator.CheckField(validator.MaxRunes(input.F_name, 15), "First-name", "First name must be at most 15 characters long")
+	input.Validator.CheckField(input.L_name != "", "Last-name", "Last name is required")
+	input.Validator.CheckField(validator.MaxRunes(input.L_name, 15), "Last-name", "Last name must be at most 15 characters long")
+
+	input.Validator.CheckField(input.Age > 0 && input.Age <= 120, "Age", "Age must be a realistic value (0-120)")
 
 	input.Validator.CheckField(input.Username != "", "Username", "Username is required")
 	input.Validator.CheckField(!usernameFound, "Username", "Username is already in use")
@@ -59,7 +70,17 @@ func (app *Application) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = app.DB.InsertUser(input.Email, hashedPassword)
+	user := database.User{
+		FName:          input.F_name,
+		LName:          input.L_name,
+		Username:       input.Username,
+		Email:          input.Email,
+		HashedPassword: hashedPassword,
+		Sex:            input.Sex,
+		Age:            input.Age,
+	}
+
+	_, err = app.DB.InsertUser(&user)
 	if err != nil {
 		app.serverError(w, r, err)
 		return

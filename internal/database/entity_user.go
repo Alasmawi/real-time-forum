@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 )
 
 type User struct {
@@ -18,15 +17,15 @@ type User struct {
 	HashedPassword string `db:"hashed_password" json:"-"`
 }
 
-func (db *DB) InsertUser(email, hashedPassword string) (int, error) {
+func (db *DB) InsertUser(usr *User) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	query := `
-    INSERT INTO user (created, email, hashed_password)
-    VALUES ($1, $2, $3)`
+        INSERT INTO user (f_name, l_name, age, sex, username, email, hashed_password)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
-	result, err := db.ExecContext(ctx, query, time.Now(), email, hashedPassword)
+	result, err := db.ExecContext(ctx, query, usr.FName, usr.LName, usr.Age, usr.Sex, usr.Username, usr.Email, usr.HashedPassword)
 	if err != nil {
 		return 0, err
 	}

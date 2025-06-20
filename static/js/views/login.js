@@ -13,11 +13,13 @@ export default class LoginView extends AbstractView {
             <form id="login-form">
                 <label for="identifier">Email or Username:</label>
                 <input type="text" id="identifier" name="identifier"><br>
-                <div id="identifier-error" style="color: red; font-size: 12px;"></div>
+                <div id="identifier-error"></div>
                 
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password"><br>
-                <div id="password-error" style="color: red; font-size: 12px;"></div>
+                <div id="password-error"></div>
+                <br>
+                <div id="error-messages"></div>
                 <br>
                 <input type="submit" value="Login">
             </form>

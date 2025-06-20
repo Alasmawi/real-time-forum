@@ -21,9 +21,13 @@ export default class RegisterView extends AbstractView {
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password"><br>
                 <label for="age">Age:</label>
-                <input type="text" id="age" name="age"><br>
+                <input type="number" id="age" name="age" min="12" max="90" step="1">
                 <label for="sex">Sex:</label>
-                <input type="sex" id="sex" name="sex"><br>
+                <select id="sex" name="sex" required>
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select><br>
                 <input type="submit" value="Register">
             </form>
         </div>
@@ -35,14 +39,35 @@ export default class RegisterView extends AbstractView {
         // Set up registration form submission
         document.getElementById("register-form").addEventListener("submit", async (e) => {
             e.preventDefault();
+
+            let sexValue;
+            const sexSelection = document.getElementById("sex").value;
+            if (sexSelection === "male") {
+                sexValue = true;  
+            } else if (sexSelection === "female") {
+                sexValue = false; 
+            } else {
+                alert("Please select your gender");
+                return;
+            }
+
+            const ageValue = document.getElementById("age").value;
+            const age = ageValue ? parseInt(ageValue) : 0;
+            
+            // Validate age before sending
+            if (!ageValue || isNaN(age) || age < 1 || age > 120) {
+                alert("Please enter a valid age between 1 and 120");
+                return;
+            }
+
             let formData = {
-                "first-name": document.getElementById("first-name").value,
-                "last-name": document.getElementById("last-name").value,
-                "email": document.getElementById("email").value,
-                "username": document.getElementById("username").value,
+                "f_name": document.getElementById("first-name").value.trim(),
+                "l_name": document.getElementById("last-name").value.trim(),
+                "email": document.getElementById("email").value.trim(),
+                "username": document.getElementById("username").value.trim(),
                 "password": document.getElementById("password").value,
-                "age": document.getElementById("age").value,
-                "sex": document.getElementById("sex").value,
+                "age": age,
+                "sex": sexValue,
             };
 
             try {
@@ -56,15 +81,27 @@ export default class RegisterView extends AbstractView {
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error("Error:", errorData);
+                    console.error("Validation errors:", errorData);
+                    
+                    // Display validation errors to the user
+                    if (errorData.FieldErrors) {
+                        let errorMessage = "Registration failed:\n\n";
+                        for (const [field, message] of Object.entries(errorData.FieldErrors)) {
+                            errorMessage += `• ${message}\n`;
+                        }
+                        alert(errorMessage);
+                    } else {
+                        alert("Registration failed. Please check your input and try again.");
+                    }
                 } else {
                     console.log("Registration successful");
+                    alert("Registration successful! Redirecting to login page...");
                     // Redirect to login page after successful registration
-                    window.location.href = "/posts";
+                    window.location.href = "/login";
                 }
             } catch (error) {
                 console.error("Error:", error);
-                alert("An error occurred during registration.");
+                alert("An error occurred during registration. Please try again.");
             }
         });
     }
