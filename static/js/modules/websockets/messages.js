@@ -3,11 +3,12 @@ import { SendMessageEvent, sendEvent } from './events.js';
 /**
 * sendMessage will send a new message onto the Chat
 **/
-function sendMessage() {
-    var newmessage = document.getElementById("message");
-    if (newmessage != null) {
+async function sendMessage() {
+    const newmessage = document.getElementById("message");
+    if (newmessage != null && newmessage.value.trim() !== '') {
         let outgoingEvent = new SendMessageEvent(newmessage.value, "percy");
-        sendEvent("send_message", outgoingEvent)
+        sendEvent("send_message", outgoingEvent);
+        newmessage.value = ''; // Clear the message input
     }
     return false;
 }
@@ -16,7 +17,7 @@ function sendMessage() {
 * appendChatMessage takes in new messages and adds them to the chat
 **/
 function appendChatMessage(messageEvent) {
-    var date = new Date(messageEvent.sent);
+    const date = new Date(messageEvent.sent);
     // format message
     const formattedMsg = `${date.toLocaleString()}: ${messageEvent.message}`;
     // Append Message

@@ -29,30 +29,24 @@ export default class LogoutView extends AbstractView {
             
             const statusDiv = document.getElementById('logout-status');
             
-            if (response.ok) {
-                // Logout successful
-                statusDiv.innerHTML = `
-                    <div class="logout-success">
-                        <h2>✓ Logged out successfully!</h2>
-                        <p>You have been logged out of your account.</p>
-                        <div class="logout-buttons">
-                            <a href="/" data-link class="logout-btn login-btn">Login</a>
-                            <a href="/register" data-link class="logout-btn register-btn">Register</a>
-                        </div>
-                    </div>
-                `;
-            } else {
-                // Logout failed
-                statusDiv.innerHTML = `
-                    <div class="logout-error">
-                        <h2>⚠ Logout Failed</h2>
-                        <p>There was an issue logging you out. Please try again.</p>
-                        <div class="logout-buttons">
-                            <a href="/" data-link class="logout-btn login-btn">Login</a>
-                        </div>
-                    </div>
-                `;
+            // Let ErrorHandler process the response
+            const errorHandled = await window.ErrorHandler.handleResponse(response);
+            if (errorHandled) {
+                // ErrorHandler took care of error (redirect, show error page, etc.)
+                return;
             }
+            
+            // Logout successful
+            statusDiv.innerHTML = `
+                <div class="logout-success">
+                    <h2>✓ Logged out successfully!</h2>
+                    <p>You have been logged out of your account.</p>
+                    <div class="logout-buttons">
+                        <a href="/" data-link class="logout-btn login-btn">Login</a>
+                        <a href="/register" data-link class="logout-btn register-btn">Register</a>
+                    </div>
+                </div>
+            `;
         } catch (error) {
             // Handle network/fetch errors
             console.error('Logout error:', error);

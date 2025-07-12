@@ -62,22 +62,7 @@ func (app *Application) failedValidation(w http.ResponseWriter, r *http.Request,
 	}
 }
 
-// func (app *Application) invalidAuthenticationToken(w http.ResponseWriter, r *http.Request) {
-// 	// headers := make(http.Header)
-// 	// headers.Set("WWW-Authenticate", "Bearer")
-
-// 	app.errorMessage(w, r, http.StatusUnauthorized, "Invalid authentication token", nil)
-// }
-
 func (app *Application) invalidateSessionToken(w http.ResponseWriter, r *http.Request) {
-	// Clear the session cookie
-	// http.SetCookie(w, &http.Cookie{
-	// 	Name:     "session_token",
-	// 	Value:    "",
-	// 	Expires:  time.Now().Add(-time.Hour),
-	// 	HttpOnly: true,
-	// })
-
 	cookie.ClearDefaultSessionCookie(w)
 
 	app.errorMessage(w, r, http.StatusUnauthorized, "Invalid session token", nil)
@@ -86,3 +71,10 @@ func (app *Application) invalidateSessionToken(w http.ResponseWriter, r *http.Re
 func (app *Application) authenticationRequired(w http.ResponseWriter, r *http.Request) {
 	app.errorMessage(w, r, http.StatusUnauthorized, "You must be authenticated to access this resource", nil)
 }
+
+// func (app *Application) invalidAuthenticationToken(w http.ResponseWriter, r *http.Request) {
+// 	// headers := make(http.Header)
+// 	// headers.Set("WWW-Authenticate", "Bearer")
+
+// 	app.errorMessage(w, r, http.StatusUnauthorized, "Invalid authentication token", nil)
+// }

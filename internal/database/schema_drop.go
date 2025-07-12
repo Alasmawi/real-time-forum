@@ -9,6 +9,7 @@ func (db *DB) DropDatabase() error {
 		"DROP TABLE IF EXISTS message;",
 		"DROP TABLE IF EXISTS post;",
 		"DROP TABLE IF EXISTS session;",
+		"DROP TABLE IF EXISTS websocket_session;",
 		"DROP TABLE IF EXISTS user;",
 		"DROP TABLE IF EXISTS category;",
 	}

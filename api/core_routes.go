@@ -2,36 +2,40 @@ package api
 
 import (
 	"net/http"
-
-	ws "reboot01.com/js/realtime-forum/internal/websocket"
 )
 
 func (app *Application) routes() http.Handler {
-	rootMux := http.NewServeMux()
-	protectedMux := http.NewServeMux()
+	// Create route registry
+	registry := NewRouteRegistry()
 
-	rootMux.HandleFunc("/js/", http.StripPrefix("/js/", app.neuteredFileHandler("./static/js/")).ServeHTTP)
-	rootMux.HandleFunc("/css/", http.StripPrefix("/css/", app.neuteredFileHandler("./static/css/")).ServeHTTP)
+	// Register static file handlers
+	registry.HandleFunc("/js/", http.StripPrefix("/js/", app.neuteredFileHandler("./static/js/")).ServeHTTP).
+		HandleFunc("/css/", http.StripPrefix("/css/", app.neuteredFileHandler("./static/css/")).ServeHTTP)
 
-	rootMux.HandleFunc("GET /v1/status", app.status)
-	rootMux.HandleFunc("GET /v1/checkauth", app.checkAuthenticated)
-	rootMux.HandleFunc("POST /v1/login", app.createAuthenticationToken)
-	rootMux.HandleFunc("POST /v1/register", app.createUser)
+	// Register API routes with method validation
+	registry.GetMethod("/v1/status", app.status).
+		GetMethod("/v1/checkauth", app.checkAuthenticated).
+		GetMethod("/v1/404", app.notFound).
+		PostMethod("/v1/login", app.createAuthenticationToken).
+		PostMethod("/v1/register", app.createUser)
+
+	// Register protected routes with method validation
 	// Reminder: implement custom JSON encoder for websocket messages
-	websocketManager := ws.NewWebsocketManager()
-	protectedMux.HandleFunc("GET /ws", websocketManager.ServeWebSocket)
 
-	protectedMux.HandleFunc("GET /v1/posts", app.fetchPosts)
-	protectedMux.HandleFunc("POST /v1/comments", app.fetchPostComments)
-	protectedMux.HandleFunc("GET /v1/categories", app.fetchCategories)
-	protectedMux.HandleFunc("POST /v1/newpost", app.newPostHandler)
-	protectedMux.HandleFunc("POST /v1/logout", app.logout)
+	registry.GetMethod("/protected/ws", app.ServeWebSocket).
+		GetMethod("/protected/v1/posts", app.fetchPosts).
+		PostMethod("/protected/v1/comments", app.fetchPostComments).
+		GetMethod("/protected/v1/categories", app.fetchCategories).
+		PostMethod("/protected/v1/newpost", app.newPostHandler).
+		PostMethod("/protected/v1/logout", app.logout)
+
+	rootMux, protectedMux := registry.GetMuxes()
+
+	registry.HandleFunc("/", app.serveIndex)
 
 	// Mounts protected routes with a middleware under /protected/ prefix
 	protectedRouteHandler := http.StripPrefix("/protected", app.authorize(protectedMux))
 	rootMux.Handle("/protected/", protectedRouteHandler)
 
-	rootMux.HandleFunc("/", app.serveIndex)
-
-	return app.logAccess(app.recoverPanic(app.authenticate(rootMux)))
+	return app.logAccess(app.recoverPanic(app.authenticate(registry.ValidateMethod()(rootMux))))
 }

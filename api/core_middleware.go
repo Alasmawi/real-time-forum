@@ -78,8 +78,7 @@ func (app *Application) authenticate(next http.Handler) http.Handler {
 		// If there is no error (cookie exists), err == nil is true
 		hasCookie := err == nil
 
-		switch hasCookie {
-		case true:
+		if hasCookie {
 			if cookie.Value == "" {
 				app.invalidateSessionToken(w, r)
 				return
@@ -99,7 +98,7 @@ func (app *Application) authenticate(next http.Handler) http.Handler {
 			// Adds users with valid sessions to the context
 			r = contextSetAuthenticatedUser(r, user)
 
-		case false:
+		} else {
 			// Potential guest logic can be added here
 		}
 

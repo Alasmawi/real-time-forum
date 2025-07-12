@@ -4,7 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
+
+	"reboot01.com/js/realtime-forum/internal/cookie"
 )
 
 type User struct {
@@ -87,18 +91,21 @@ func (db *DB) GetUserByUsername(username string) (*User, bool, error) {
 	return &user, true, err
 }
 
-func (db *DB) GetUserBySession(sessionID string) (*User, bool, error) {
+func (db *DB) GetUserBySession(sessionToken string) (*User, bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	var userID int
 
-	query := `
+	// Conversion to int64 is necessary for SQL compatibility
+	expiryMinutes := int(cookie.CookieExpirey.Minutes())
+	query := fmt.Sprintf(`
     SELECT user_id 
     FROM session 
-    WHERE session_id = $1`
+    WHERE session_token = $1 
+    AND datetime(created_at, '+%d minutes') > datetime('now')`, expiryMinutes)
 
-	err := db.GetContext(ctx, &userID, query, sessionID)
+	err := db.GetContext(ctx, &userID, query, sessionToken)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, false, nil
 	}
@@ -120,15 +127,74 @@ func (db *DB) UpdateUserHashedPassword(id int, hashedPassword string) error {
 	return err
 }
 
-func (db *DB) GetAllUsers() ([]User, error) {
+// GetOfflineUsers returns users not currently online with pagination
+func (db *DB) GetOfflineUsers(offset, limit int, onlineUserIDs []int) ([]User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
+
+	var users []User
+	var query string
+	var args []interface{}
+
+	if len(onlineUserIDs) == 0 {
+		// No online users to exclude
+		query = `SELECT id, username FROM user ORDER BY username ASC LIMIT $1 OFFSET $2`
+		args = []interface{}{limit, offset}
+	} else {
+		// Exclude online users
+		placeholders := make([]string, len(onlineUserIDs))
+		for i := range onlineUserIDs {
+			placeholders[i] = fmt.Sprintf("$%d", i+1)
+		}
+
+		query = `SELECT id, username FROM user 
+         WHERE id NOT IN (` + strings.Join(placeholders, ",") + `) 
+         ORDER BY username ASC 
+         LIMIT $` + fmt.Sprintf("%d", len(onlineUserIDs)+1) + ` OFFSET $` + fmt.Sprintf("%d", len(onlineUserIDs)+2)
+
+		args = make([]interface{}, len(onlineUserIDs)+2)
+		for i, id := range onlineUserIDs {
+			args[i] = id
+		}
+		args[len(onlineUserIDs)] = limit
+		args[len(onlineUserIDs)+1] = offset
+	}
+
+	err := db.SelectContext(ctx, &users, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+// GetUsersOrderedByActivity returns users sorted by last message activity with current user
+func (db *DB) GetUsersOrderedByActivity(currentUserID int) ([]User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	var users []User
 
-	query := `SELECT * FROM user ORDER BY username ASC`
+	query := `
+    SELECT u.id, u.username,
+           MAX(CASE 
+               WHEN m.sender_id = $1 OR m.receiver_id = $2 
+               THEN m.created_at 
+               ELSE NULL 
+           END) as last_message_time
+    FROM user u
+    LEFT JOIN message m ON (
+        (m.sender_id = u.id AND m.receiver_id = $3) OR 
+        (m.sender_id = $4 AND m.receiver_id = u.id)
+    )
+    WHERE u.id != $5 
+    GROUP BY u.id, u.username
+    ORDER BY 
+        CASE WHEN last_message_time IS NULL THEN 1 ELSE 0 END,
+        last_message_time DESC NULLS LAST,
+        u.username ASC`
 
-	err := db.SelectContext(ctx, &users, query)
+	err := db.SelectContext(ctx, &users, query, currentUserID, currentUserID, currentUserID, currentUserID, currentUserID)
 	if err != nil {
 		return nil, err
 	}

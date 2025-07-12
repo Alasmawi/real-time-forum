@@ -37,17 +37,19 @@ export default class NewPostView extends AbstractView {
         try {
             const response = await fetch("/protected/v1/categories");
             
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Categories response:", data); // Debug log
-                console.log("Categories type:", typeof data); // Debug log
-                console.log("Categories is array:", Array.isArray(data)); // Debug log
-                // Backend returns array of category objects directly
-                this.categories = data;
-            } else {
-                console.error("Failed to load categories from API, status:", response.status);
+            // Let ErrorHandler process the response
+            const errorHandled = await window.ErrorHandler.handleResponse(response);
+            if (errorHandled) {
                 this.categories = [];
+                return; // ErrorHandler took care of error (redirect, show error page, etc.)
             }
+            
+            const data = await response.json();
+            console.log("Categories response:", data); // Debug log
+            console.log("Categories type:", typeof data); // Debug log
+            console.log("Categories is array:", Array.isArray(data)); // Debug log
+            // Backend returns array of category objects directly
+            this.categories = data;
         } catch (error) {
             console.error("Error loading categories:", error);
             this.categories = [];
@@ -110,19 +112,20 @@ export default class NewPostView extends AbstractView {
                     body: JSON.stringify(formData),
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    this.showError("Failed to create post: " + (errorData.Error || "Unknown error"));
-                } else {
-                    const data = await response.json();
-                    this.showSuccess("Post created successfully!");
-                    document.getElementById("newpost-form").reset();
-                    
-                    setTimeout(() => {
-                        window.history.pushState(null, null, "/posts");
-                        window.dispatchEvent(new PopStateEvent('popstate'));
-                    }, 2000);
+                // Let ErrorHandler process the response
+                const errorHandled = await window.ErrorHandler.handleResponse(response);
+                if (errorHandled) {
+                    return; // ErrorHandler took care of error (redirect, show error page, etc.)
                 }
+
+                const data = await response.json();
+                this.showSuccess("Post created successfully!");
+                document.getElementById("newpost-form").reset();
+                
+                setTimeout(() => {
+                    window.history.pushState(null, null, "/posts");
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                }, 2000);
             } catch (error) {
                 console.error("Error:", error);
                 this.showError("An error occurred while creating the post.");

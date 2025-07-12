@@ -24,7 +24,3 @@ func (app *Application) status(w http.ResponseWriter, r *http.Request) {
 func (app *Application) serveIndex(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./static/index.html")
 }
-
-// func (app *Application) protected(w http.ResponseWriter, r *http.Request) {
-// w.Write([]byte("This is a protected handler"))
-// }

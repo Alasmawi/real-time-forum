@@ -38,12 +38,15 @@ export default class PostsView extends AbstractView {
     async loadCategories() {
         try {
             const response = await fetch('/protected/v1/categories');
-            if (response.ok) {
-                this.categories = await response.json();
-            } else {
-                console.error('Failed to load categories');
+            
+            // Let ErrorHandler process the response
+            const errorHandled = await window.ErrorHandler.handleResponse(response);
+            if (errorHandled) {
                 this.categories = [];
+                return; // ErrorHandler took care of error (redirect, show error page, etc.)
             }
+            
+            this.categories = await response.json();
         } catch (error) {
             console.error('Error loading categories:', error);
             this.categories = [];
@@ -55,12 +58,15 @@ export default class PostsView extends AbstractView {
             const response = await fetch('/protected/v1/posts', {
                 credentials: 'include'
             });
-            if (response.ok) {
-                this.posts = await response.json();
-            } else {
-                console.error('Failed to load posts');
+            
+            // Let ErrorHandler process the response
+            const errorHandled = await window.ErrorHandler.handleResponse(response);
+            if (errorHandled) {
                 this.posts = [];
+                return; // ErrorHandler took care of error (redirect, show error page, etc.)
             }
+            
+            this.posts = await response.json();
         } catch (error) {
             console.error('Error loading posts:', error);
             this.posts = [];
@@ -221,12 +227,15 @@ export default class PostsView extends AbstractView {
                             })
                         });
                         
-                        if (response.ok) {
-                            const comments = await response.json();
-                            commentsDiv.innerHTML = this.generateCommentsHTML(comments);
-                        } else {
+                        // Let ErrorHandler process the response
+                        const errorHandled = await window.ErrorHandler.handleResponse(response);
+                        if (errorHandled) {
                             commentsDiv.innerHTML = '<p style="color: #dc3545; font-style: italic;">Failed to load comments.</p>';
+                            return; // ErrorHandler took care of error (redirect, show error page, etc.)
                         }
+                        
+                        const comments = await response.json();
+                        commentsDiv.innerHTML = this.generateCommentsHTML(comments);
                     } catch (error) {
                         console.error('Error loading comments:', error);
                         commentsDiv.innerHTML = '<p style="color: #dc3545; font-style: italic;">Error loading comments.</p>';

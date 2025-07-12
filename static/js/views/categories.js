@@ -24,23 +24,23 @@ export default class CategoriesView extends AbstractView {
     async loadCategories() {
         try {
             console.log("Attempting to fetch categories...");
-            const response = await fetch("/v1/categories");
+            const response = await fetch("/protected/v1/categories");
             
             console.log("Response status:", response.status);
             console.log("Response ok:", response.ok);
             
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Categories response:", data);
-                console.log("Categories type:", typeof data);
-                console.log("Categories is array:", Array.isArray(data));
-                this.categories = data;
-            } else {
-                console.error("Failed to load categories, status:", response.status);
-                const errorText = await response.text();
-                console.error("Error response:", errorText);
+            // Let ErrorHandler process the response
+            const errorHandled = await window.ErrorHandler.handleResponse(response);
+            if (errorHandled) {
                 this.categories = [];
+                return; // ErrorHandler took care of error (redirect, show error page, etc.)
             }
+            
+            const data = await response.json();
+            console.log("Categories response:", data);
+            console.log("Categories type:", typeof data);
+            console.log("Categories is array:", Array.isArray(data));
+            this.categories = data;
         } catch (error) {
             console.error("Error loading categories:", error);
             this.categories = [];

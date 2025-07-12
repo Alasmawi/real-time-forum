@@ -43,8 +43,9 @@ func (db DB) CreateDatabase() error {
 
 	const CreateSessionTable = `
     CREATE TABLE IF NOT EXISTS session (
-        session_id TEXT PRIMARY KEY,
+        session_token TEXT PRIMARY KEY,
         user_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES user(id)
     );`
 

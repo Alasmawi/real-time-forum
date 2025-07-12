@@ -13,7 +13,7 @@ type Message struct {
 	CreatedAt  time.Time `db:"created_at" json:"created_at"`
 }
 
-func (db *DB) InsertMessage(senderid, receiverid int, message string) (int, error) {
+func (db *DB) InsertMessage(senderid, receiverid int, message string, timestamp time.Time) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -21,7 +21,7 @@ func (db *DB) InsertMessage(senderid, receiverid int, message string) (int, erro
     INSERT INTO message (sender_id, receiver_id, message, created_at)
     VALUES ($1, $2, $3, $4)`
 
-	result, err := db.ExecContext(ctx, query, senderid, receiverid, message, time.Now())
+	result, err := db.ExecContext(ctx, query, senderid, receiverid, message, timestamp)
 	if err != nil {
 		return 0, err
 	}

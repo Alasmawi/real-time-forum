@@ -1,3 +1,5 @@
+import { appendChatMessage } from './messages.js';
+
 /**
  * Event is used to wrap all messages Send and Recieved
  * on the Websocket
@@ -16,9 +18,11 @@ class Event {
  * SendMessageEvent is used to send messages to other clients
  **/
 class SendMessageEvent {
-  constructor (message, from) {
+  constructor (message, sender_id, receiver_id, session_token) {
     this.message = message
-    this.from = from
+    this.sender_id = sender_id
+    this.receiver_id = receiver_id
+    this.session_token = session_token
   }
 }
 /**
@@ -47,7 +51,10 @@ class ChangeChatRoomEvent {
 const eventTypes = {
   newMessage: 'new_message',
   sendMessage: 'send_message',
-  changeRoom: 'change_room'
+  requestUserList: 'request_user_list',
+  userListUpdate: 'user_list_update',
+  userStatusChange: 'user_status_change',
+  error: 'error'
 }
 
 /**
@@ -65,9 +72,65 @@ function routeEvent (event) {
       const messageEvent = Object.assign(new NewMessageEvent(), event.payload)
       appendChatMessage(messageEvent)
       break
+    case eventTypes.userListUpdate:
+      handleUserListUpdate(event.payload)
+      break
+    case eventTypes.userStatusChange:
+      handleUserStatusChange(event.payload)
+      break
+    case eventTypes.error:
+      handleError(event.payload)
+      break
     default:
-      console.warn('unsupported action')
+      console.warn('unsupported action:', event.type)
   }
+}
+
+/**
+ * Handle user list updates
+ */
+function handleUserListUpdate(payload) {
+  const userList = JSON.parse(payload)
+  console.log('User list updated:', userList)
+  // TODO: Update user list UI
+}
+
+/**
+ * Handle user status changes (online/offline)
+ */
+function handleUserStatusChange(payload) {
+  const statusChange = JSON.parse(payload)
+  console.log('User status change:', statusChange)
+  // TODO: Update user list UI
+}
+
+/**
+ * Handle error events
+ */
+function handleError(payload) {
+  const error = JSON.parse(payload)
+  console.error('WebSocket error:', error)
+  
+  if (error.code === 'RECEIVER_OFFLINE') {
+    alert('The user you are trying to message is not online.')
+  } else if (error.code === 'SELF_MESSAGE') {
+    alert('You cannot send messages to yourself.')
+  } else {
+    alert(`Error: ${error.message}`)
+  }
+}
+
+/**
+ * Request user list from server
+ */
+async function requestUserList() {
+  const sessionToken = await getSessionToken()
+  if (!sessionToken) {
+    console.error('No session token found')
+    return
+  }
+  
+  sendEvent(eventTypes.requestUserList, { session_token: sessionToken })
 }
 
 /**
@@ -83,4 +146,4 @@ function sendEvent(eventName, payload) {
 }
 
 // Export all classes and functions
-export { Event, SendMessageEvent, NewMessageEvent, ChangeChatRoomEvent, eventTypes, routeEvent, sendEvent };
+export { Event, SendMessageEvent, NewMessageEvent, ChangeChatRoomEvent, eventTypes, routeEvent, sendEvent, requestUserList};
