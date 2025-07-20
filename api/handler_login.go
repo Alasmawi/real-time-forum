@@ -13,7 +13,11 @@ import (
 func (app *Application) logout(w http.ResponseWriter, r *http.Request) {
 	user := contextGetAuthenticatedUser(r)
 
-	app.DB.DeleteSession(user.ID)
+	err := app.DB.DeleteSession(user.ID)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
 
 	app.invalidateSessionToken(w, r)
 
@@ -33,8 +37,8 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 		return
 	}
 
-	input.Validator.CheckField(input.Identifier != "", "Identifier", "Email or username is required")
-	input.Validator.CheckField(input.Password != "", "Password", "Password is required")
+	input.Validator.CheckField(validator.NotBlank(input.Identifier), "identifier", "Email or username is required")
+	input.Validator.CheckField(validator.NotBlank(input.Password), "password", "Password is required")
 
 	var user *database.User
 	var found bool
@@ -46,14 +50,14 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 			app.serverError(w, r, err)
 			return
 		}
-		input.Validator.CheckField(found, "Identifier", "Email address could not be found")
+		input.Validator.CheckField(found, "identifier", "Email address could not be found")
 	case false:
 		user, found, err = app.DB.GetUserByUsername(input.Identifier)
 		if err != nil {
 			app.serverError(w, r, err)
 			return
 		}
-		input.Validator.CheckField(found, "Identifier", "Username could not be found")
+		input.Validator.CheckField(found, "identifier", "Username could not be found")
 	}
 
 	if found && user != nil {
@@ -63,7 +67,7 @@ func (app *Application) createAuthenticationToken(w http.ResponseWriter, r *http
 			return
 		}
 
-		input.Validator.CheckField(passwordMatches, "Password", "Password is incorrect")
+		input.Validator.CheckField(passwordMatches, "password", "Password is incorrect")
 	}
 
 	if input.Validator.HasErrors() {

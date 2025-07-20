@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const CookieExpirey = 30 * time.Minute
+
 func SetSessionCookie(w http.ResponseWriter, name, value, path, domain string, httpOnly, secure bool, sameSite http.SameSite, maxAge int) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     name,
@@ -19,9 +21,9 @@ func SetSessionCookie(w http.ResponseWriter, name, value, path, domain string, h
 }
 
 func SetDefaultSessionCookie(w http.ResponseWriter, value string) {
-	SetSessionCookie(w, "session_token", value, "/", "", true, false, http.SameSiteStrictMode, int((30 * time.Minute).Seconds()))
+	SetSessionCookie(w, "session_token", value, "/", "", false, false, http.SameSiteStrictMode, int((CookieExpirey).Seconds()))
 }
 
 func ClearDefaultSessionCookie(w http.ResponseWriter) {
-	SetSessionCookie(w, "session_token", "", "/", "", true, false, http.SameSiteStrictMode, -1)
+	SetSessionCookie(w, "session_token", "", "/", "", false, false, http.SameSiteStrictMode, -1)
 }

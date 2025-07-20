@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Transformed by: SVG Repo Mixer Tools -->
+
+<svg
+   width="19"
+   height="16"
+   viewBox="0 0 7.125 6"
+   id="meteor-icon-kit__regular-comment"
+   fill="none"
+   stroke=""
+   stroke-width="0.00024"
+   version="1.1"
+   sodipodi:docname="svg-small-comments.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="4.7619222"
+     inkscape:cx="47.669825"
+     inkscape:cy="36.119867"
+     inkscape:window-width="1920"
+     inkscape:window-height="1008"
+     inkscape:window-x="0"
+     inkscape:window-y="1080"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="meteor-icon-kit__regular-comment" />
+  <g
+     id="SVGRepo_bgCarrier"
+     stroke-width="0" />
+  <g
+     id="SVGRepo_tracerCarrier"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     stroke="#cccccc"
+     stroke-width="0.048" />
+  <g
+     id="SVGRepo_iconCarrier"
+     transform="scale(0.296875,0.30019748)">
+    <path
+       fill-rule="evenodd"
+       clip-rule="evenodd"
+       d="M 5,2 C 3.34315,2 2,3.34315 2,5 V 17.9868 L 5.64242,15 H 19 c 1.6569,0 3,-1.3431 3,-3 V 5 C 22,3.34315 20.6569,2 19,2 Z M 6.35758,17 3.26816,19.5333 C 2.41403,20.2337 1.15385,20.1091 0.453464,19.2549 0.160246,18.8974 0,18.4492 0,17.9868 V 5 C 0,2.23858 2.23858,0 5,0 h 14 c 2.7614,0 5,2.23858 5,5 v 7 c 0,2.7614 -2.2386,5 -5,5 z"
+       fill="#8e9297"
+       id="path4" />
+  </g>
+</svg>

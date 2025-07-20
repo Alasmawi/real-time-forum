@@ -1,0 +1,68 @@
+/* Main Layout Structure */
+.app-layout {
+    display: flex;
+    gap: var(--gap-large);
+    padding: var(--gap-large);
+    height: 100vh;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Left Column Container */
+.left-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-medium);
+    width: clamp(250px, 25vw, 270px);
+}
+
+/* Middle Column Container */
+.middle-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-medium);
+    overflow: hidden;
+}
+
+/* Categories Card (Top of Middle) */
+.categories-card {
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-medium);
+    padding: var(--gap-medium);
+    box-shadow: var(--shadow-small);
+    transition: background-color var(--transition-fast);
+    flex-shrink: 0;
+    width: 100%;
+}
+
+/* Main Content Card (Bottom of Middle) */
+.content-card {
+    flex: 1;
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-medium);
+    padding: var(--gap-large);
+    box-shadow: var(--shadow-small);
+    transition: background-color var(--transition-fast);
+    overflow-y: auto;
+    min-height: 0;
+    width: 100%;
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+    .app-layout {
+        flex-direction: column;
+        gap: var(--gap-medium);
+    }
+}
+
+@media (max-width: 768px) {
+    .app-layout {
+        padding: var(--gap-small);
+    }
+    
+    .content-card {
+        padding: var(--gap-medium);
+    }
+}

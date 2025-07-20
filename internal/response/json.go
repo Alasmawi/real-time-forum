@@ -27,3 +27,14 @@ func JSONWithHeaders(w http.ResponseWriter, status int, data any, headers http.H
 
 	return nil
 }
+
+// EncodeJSON encodes data to JSON bytes for direct use (e.g., WebSocket)
+func EncodeJSON(data any) ([]byte, error) {
+	js, err := json.MarshalIndent(data, "", "\t")
+	if err != nil {
+		return nil, err
+	}
+	
+	js = append(js, '\n')
+	return js, nil
+}

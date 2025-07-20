@@ -8,6 +8,7 @@ import (
 	"runtime/debug"
 
 	"reboot01.com/js/realtime-forum/api"
+	"reboot01.com/js/realtime-forum/api/websocket"
 	"reboot01.com/js/realtime-forum/internal/database"
 	"reboot01.com/js/realtime-forum/internal/env"
 	"reboot01.com/js/realtime-forum/internal/version"
@@ -64,6 +65,10 @@ func run(logger *slog.Logger) error {
 		DB:     db,
 		Logger: logger,
 	}
+
+	// Initialize WebSocket manager
+	app.WSManager = websocket.NewWebsocketManager()
+	app.WSManager.DB = db
 
 	return app.ServeHTTP()
 }

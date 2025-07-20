@@ -1,0 +1,106 @@
+/* Error Page Styles */
+.error-page-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: background-color var(--transition-fast);
+}
+
+.error-page-content {
+    text-align: center;
+    padding: var(--gap-extra-large);
+    max-width: 500px;
+    width: 90%;
+}
+
+.error-page-content h1 {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    color: var(--accent-primary);
+    margin: 0 0 var(--gap-medium) 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    line-height: 1;
+}
+
+.error-page-content h2 {
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 var(--gap-large) 0;
+    line-height: 1.3;
+}
+
+.error-page-actions {
+    display: flex;
+    gap: var(--gap-medium);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: var(--gap-large);
+}
+
+.error-page-button {
+    background-color: var(--accent-primary);
+    color: white;
+    border: none;
+    padding: var(--gap-medium) var(--gap-large);
+    border-radius: var(--radius-medium);
+    font-size: var(--font-size-medium);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.error-page-button:hover {
+    background-color: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.error-page-button.secondary {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.error-page-button.secondary:hover {
+    background-color: var(--bg-secondary);
+    border-color: var(--accent-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .error-page-content {
+        padding: var(--gap-large);
+    }
+    
+    .error-page-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .error-page-button {
+        width: 100%;
+        max-width: 250px;
+    }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .error-page-container {
+        background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    }
+}

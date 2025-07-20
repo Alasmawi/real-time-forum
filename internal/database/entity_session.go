@@ -4,15 +4,15 @@ import (
 	"context"
 )
 
-func (db *DB) InsertSession(userid int, sessionID string) error {
+func (db *DB) InsertSession(userid int, sessionToken string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	query := `
-    INSERT INTO session (session_id, user_id)
-    VALUES ($1, $2)`
+    INSERT INTO session (session_token, user_id, created_at)
+    VALUES ($1, $2, CURRENT_TIMESTAMP)`
 
-	_, err := db.ExecContext(ctx, query, sessionID, userid)
+	_, err := db.ExecContext(ctx, query, sessionToken, userid)
 	if err != nil {
 		return err
 	}

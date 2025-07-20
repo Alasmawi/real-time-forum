@@ -1,0 +1,178 @@
+/* New Post Card Styles */
+.new-post-card {
+    background-color: var(--bg-primary);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-medium);
+    padding: var(--gap-large);
+    margin-bottom: var(--gap-large);
+    position: relative;
+    box-sizing: border-box;
+    /* Remove hover effects - don't highlight the card itself */
+}
+
+.new-post-card .post-header {
+    margin-bottom: var(--gap-medium);
+    display: flex;
+    align-items: center;
+    gap: var(--gap-medium);
+}
+
+/* Success message styling */
+.new-post-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: var(--radius-small);
+    padding: var(--gap-medium);
+    margin-bottom: var(--gap-medium);
+    display: none;
+}
+
+.new-post-success.show {
+    display: block;
+}
+
+.post-textarea {
+    width: 100%;
+    height: 100px;
+    resize: vertical;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-small);
+    padding: var(--gap-medium);
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: border-color var(--transition-fast);
+    box-sizing: border-box;
+    min-height: 80px;
+    max-height: 200px;
+}
+
+.post-textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    background-color: var(--bg-primary);
+}
+
+.post-textarea.error {
+    border-color: #f44336 !important;
+    animation: shake 0.3s ease-in-out;
+}
+
+.post-textarea.error:focus {
+    border-color: #f44336 !important;
+    box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2);
+}
+
+.character-counter {
+    text-align: left;
+    font-size: var(--font-size-small);
+    color: var(--text-secondary);
+    margin-top: var(--gap-small);
+}
+
+.category-selection {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-small);
+    margin-top: var(--gap-small);
+    max-height: 120px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.category-btn {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: var(--gap-small) var(--gap-medium);
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-small);
+}
+
+.category-btn:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--accent-primary);
+}
+
+.new-post-card .category-btn.selected {
+    background-color: var(--accent-primary);
+    color: var(--text-inverse);
+    border-color: var(--accent-primary);
+}
+
+.new-post-card .category-btn.selected:hover {
+    background-color: var(--accent-hover);
+    color: var(--text-inverse);
+    border-color: var(--accent-hover);
+}
+
+.post-submit-btn {
+    background-color: var(--accent-primary);
+    color: var(--text-inverse);
+    border: none;
+    padding: var(--gap-medium) var(--gap-large);
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color var(--transition-fast);
+    min-width: 100px;
+}
+
+.post-submit-btn:hover {
+    background-color: var(--accent-hover);
+}
+
+.post-submit-btn:disabled {
+    background-color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+/* New Post Form Container */
+.new-post-form-container {
+    border: 3px solid var(--text-primary);
+    margin-top: var(--gap-large);
+    padding: var(--gap-large);
+    border-radius: var(--radius-medium);
+    background-color: var(--bg-secondary);
+}
+
+/* New Post Messages */
+.new-post-message {
+    margin-top: var(--gap-medium);
+    padding: var(--gap-medium);
+    border-radius: var(--radius-small);
+    font-weight: 500;
+}
+
+.new-post-message.success {
+    color: var(--success-color);
+    background-color: var(--success-bg);
+    border: 1px solid var(--success-border);
+}
+
+.new-post-message.error {
+    color: var(--danger-color);
+    background-color: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+}
+
+/* Expandable content transitions */
+.new-post-card .expandable-content {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.new-post-card .expandable-content.expanded {
+    max-height: 200px;
+    opacity: 1;
+    margin-top: var(--gap-small);
+    margin-bottom: 0;
+}

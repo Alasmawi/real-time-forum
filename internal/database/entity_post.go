@@ -6,12 +6,13 @@ import (
 )
 
 type Post struct {
-	Id         int        `db:"id" json:"id"`
-	Username   string     `db:"username" json:"username"`
-	Content    string     `db:"content" json:"content"`
-	CreatedAt  time.Time  `db:"created_at" json:"created_at"`
-	Comments   []Comment  `json:"comments"`
-	Categories []Category `json:"categories"`
+	Id           int        `db:"id" json:"id"`
+	Username     string     `db:"username" json:"username"`
+	Content      string     `db:"content" json:"content"`
+	CreatedAt    time.Time  `db:"created_at" json:"created_at"`
+	CommentCount int        `db:"comment_count" json:"comment_count"`
+	Comments     []Comment  `json:"comments"`
+	Categories   []Category `json:"categories"`
 }
 
 func (db *DB) GetPostByID(postID int) (*Post, error) {
@@ -33,20 +34,26 @@ func (db *DB) GetPostByID(postID int) (*Post, error) {
 	return &post, nil
 }
 
-func (db *DB) GetAllPosts() ([]Post, error) {
+
+// GetPostsPaginated returns posts with pagination
+func (db *DB) GetPaginatedPosts(offset, limit int) ([]Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	var posts []Post
 
-	// Get all posts with usernames from the user table
+	// Get posts with pagination and comment counts
 	query := `
-        SELECT p.id, u.username, p.content, p.created_at
+        SELECT p.id, u.username, p.content, p.created_at, 
+               COALESCE(COUNT(c.id), 0) as comment_count
         FROM post p            
         JOIN user u ON p.user_id = u.id
-        ORDER BY p.created_at DESC`
+        LEFT JOIN comment c ON p.id = c.post_id
+        GROUP BY p.id, u.username, p.content, p.created_at
+        ORDER BY p.created_at DESC
+        LIMIT $1 OFFSET $2`
 
-	err := db.SelectContext(ctx, &posts, query)
+	err := db.SelectContext(ctx, &posts, query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +74,18 @@ func (db *DB) GetAllPosts() ([]Post, error) {
 	return posts, nil
 }
 
-func (db *DB) InsertPost(content string, userID int) (int, error) {
+// GetPostsCount returns total number of posts
+func (db *DB) GetPostsCount() (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
+
+	var count int
+	query := `SELECT COUNT(*) FROM post`
+	err := db.GetContext(ctx, &count, query)
+	return count, err
+}
+
+func (db *DB) InsertPost(content string, currentDateTime string, userID int) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -75,7 +93,7 @@ func (db *DB) InsertPost(content string, userID int) (int, error) {
     INSERT INTO post (content, created_at, user_id) 
     VALUES ($1, $2, $3)`
 
-	result, err := db.ExecContext(ctx, query, content, time.Now(), userID)
+	result, err := db.ExecContext(ctx, query, content, currentDateTime, userID)
 	if err != nil {
 		return 0, err
 	}

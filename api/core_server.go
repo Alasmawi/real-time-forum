@@ -9,12 +9,12 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"reboot01.com/js/realtime-forum/api/websocket"
+	"reboot01.com/js/realtime-forum/internal/database"
 	"strings"
 	"sync"
 	"syscall"
 	"time"
-
-	"reboot01.com/js/realtime-forum/internal/database"
 )
 
 /*
@@ -28,25 +28,20 @@ type Config struct {
 		DSN string
 		// automigrate bool
 	}
-	JWT struct {
-		SecretKey string
-	}
+	// JWT struct {
+	// 	SecretKey string
+	// }
 }
 
-// Define an Application struct to hold the dependencies for our HTTP handlers, helpers,
-// and middleware. At the moment this only contains a copy of the config struct and a
-// logger, but it will grow to include a lot more as our build progresses.
+// Application holds the dependencies for HTTP handlers, helpers,
+// and middleware.
 type Application struct {
-	Config Config
-	DB     *database.DB
-	Logger *slog.Logger
-	WG     sync.WaitGroup
+	Config    Config
+	DB        *database.DB
+	Logger    *slog.Logger
+	WG        sync.WaitGroup
+	WSManager *websocket.WebsocketManager
 }
-
-// neuteredFileSystem is a custom type which embeds the standard http.FileSystem.
-// type neuteredFileSystem struct {
-// 	fs http.FileSystem
-// }
 
 const (
 	defaultIdleTimeout    = time.Minute
@@ -96,35 +91,6 @@ func (app *Application) ServeHTTP() error {
 	return nil
 }
 
-// Open checks the requested file path and determines whether it is a directory or not.
-// If it is a directory, it attempts to open an index.html file in it.
-// func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
-// 	f, err := nfs.fs.Open(path)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	s, err := f.Stat()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	if s.IsDir() {
-// 		index := filepath.Join(path, "index.html")
-// 		if _, err := nfs.fs.Open(index); err != nil {
-// 			// Closes the original file to avoid a file descriptor leak
-// 			closeErr := f.Close()
-// 			if closeErr != nil {
-// 				return nil, closeErr
-// 			}
-
-// 			return nil, err
-// 		}
-// 	}
-
-// 	return f, nil
-// }
-
 // neuteredFileHandler creates a custom file handler that returns JSON error responses
 // instead of HTML when files are not found or directories are accessed inappropriately
 func (app *Application) neuteredFileHandler(dir string) http.HandlerFunc {
@@ -159,7 +125,6 @@ func (app *Application) neuteredFileHandler(dir string) http.HandlerFunc {
 			fullPath = indexPath
 		}
 
-		// Set appropriate content type based on file extension
 		ext := filepath.Ext(fullPath)
 		switch ext {
 		case ".js":
@@ -170,7 +135,40 @@ func (app *Application) neuteredFileHandler(dir string) http.HandlerFunc {
 			w.Header().Set("Content-Type", "text/html")
 		}
 
-		// Serve the file
 		http.ServeFile(w, r, fullPath)
 	}
 }
+
+// neuteredFileSystem is a custom type which embeds the standard http.FileSystem.
+// type neuteredFileSystem struct {
+// 	fs http.FileSystem
+// }
+
+// Open checks the requested file path and determines whether it is a directory or not.
+// If it is a directory, it attempts to open an index.html file in it.
+// func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
+// 	f, err := nfs.fs.Open(path)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	s, err := f.Stat()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	if s.IsDir() {
+// 		index := filepath.Join(path, "index.html")
+// 		if _, err := nfs.fs.Open(index); err != nil {
+// 			// Closes the original file to avoid a file descriptor leak
+// 			closeErr := f.Close()
+// 			if closeErr != nil {
+// 				return nil, closeErr
+// 			}
+
+// 			return nil, err
+// 		}
+// 	}
+
+// 	return f, nil
+// }

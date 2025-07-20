@@ -1,0 +1,87 @@
+/* Categories Card Component - Layout defined in layout-structure.css */
+
+.categories-card h3 {
+    color: var(--text-inverse);
+    margin-bottom: var(--gap-medium);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.category-filters {
+    display: flex;
+    gap: var(--gap-small);
+    flex-wrap: wrap;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.category-filters.expanded {
+    max-height: 200px;
+    opacity: 1;
+    padding-top: var(--gap-small);
+    padding-bottom: var(--gap-small);
+}
+
+.category-filter {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: var(--gap-small) var(--gap-medium);
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-small);
+    text-decoration: none;
+    display: inline-block;
+    margin: 0;
+}
+
+.category-filter:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--accent-primary);
+}
+
+.category-filter.active {
+    background-color: var(--accent-primary);
+    color: var(--text-inverse);
+    border-color: var(--accent-primary);
+}
+
+.category-filter.active:hover {
+    background-color: var(--accent-hover);
+    color: var(--text-inverse);
+    border-color: var(--accent-hover);
+}
+
+/* Toggle categories button */
+.toggle-categories-btn {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: var(--gap-small) var(--gap-medium);
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-small);
+    width: 100%;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.toggle-categories-btn:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--accent-primary);
+}
+
+.categories-header {
+    margin-bottom: 0;
+}
+
+.categories-card {
+    margin-bottom: var(--gap-medium);
+}

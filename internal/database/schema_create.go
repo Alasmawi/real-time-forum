@@ -43,8 +43,9 @@ func (db DB) CreateDatabase() error {
 
 	const CreateSessionTable = `
     CREATE TABLE IF NOT EXISTS session (
-        session_id TEXT PRIMARY KEY,
-        user_id INTEGER NOT NULL UNIQUE,
+        session_token TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES user(id)
     );`
 
@@ -55,27 +56,15 @@ func (db DB) CreateDatabase() error {
         l_name TEXT NOT NULL,
         age INTEGER NOT NULL,
         sex BOOLEAN NOT NULL,
-        username TEXT NOT NULL,
+        username TEXT NOT NULL UNIQUE,
         email TEXT NOT NULL,
         hashed_password TEXT NOT NULL
-    );`
-
-	const CreateNotificationTable = `
-    CREATE TABLE IF NOT EXISTS notification (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        post_id INTEGER NOT NULL,
-        message TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES user(id),
-        FOREIGN KEY (post_id) REFERENCES post(id)
     );`
 
 	const CreateMessageTable = `
     CREATE TABLE IF NOT EXISTS message (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         sender_id INTEGER NOT NULL,
-        sender_name TEXT NOT NULL,
         receiver_id INTEGER NOT NULL,
         message TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -90,7 +79,6 @@ func (db DB) CreateDatabase() error {
 		CreatePostHasCategoryTable,
 		CreateSessionTable,
 		CreateUserTable,
-		CreateNotificationTable,
 		CreateMessageTable,
 	}
 
