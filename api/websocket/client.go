@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"reboot01.com/js/realtime-forum/internal/response"
 )
 
 var (
@@ -15,14 +16,12 @@ var (
 	pingInterval = (pongWait * 9) / 10 //90% of pongWait
 )
 
-type ClientList map[*Client]bool
-
 type Client struct {
 	connection *websocket.Conn
-	manager *WebsocketManager
+	manager    *WebsocketManager
 
 	// Egress is used to avoid concurrent writes on the WebSocket
-	egress chan Event
+	egress        chan Event
 	userID        int    `json:"user_id"`
 	username      string `json:"username"`
 	sessionToken  string `json:"session_token"`
@@ -109,17 +108,46 @@ func (c *Client) sendErrorEvent(code, message string) {
 	errorEvent := map[string]interface{}{
 		"code":    code,
 		"message": message,
-		"type":    "error",
 	}
 
-	data, err := json.Marshal(errorEvent)
+	data, err := response.EncodeJSON(errorEvent)
 	if err != nil {
-		log.Printf("Failed to marshal error event: %v", err)
+		log.Printf("Failed to encode error event: %v", err)
 		return
 	}
 
 	event := Event{
-		Type:    "error",
+		Type:    EventError,
+		Payload: data,
+	}
+
+	select {
+	case c.egress <- event:
+	default:
+		log.Printf("Client egress channel full, dropping error message")
+	}
+}
+
+// sendErrorEventWithContext sends an error event to the client with additional context
+func (c *Client) sendErrorEventWithContext(code, message string, context map[string]interface{}) {
+	errorEvent := map[string]interface{}{
+		"code":    code,
+		"message": message,
+	}
+	
+	// Add context fields
+	for key, value := range context {
+		errorEvent[key] = value
+	}
+
+	data, err := response.EncodeJSON(errorEvent)
+	if err != nil {
+		log.Printf("Failed to encode error event: %v", err)
+		return
+	}
+
+	event := Event{
+		Type:    EventError,
 		Payload: data,
 	}
 
@@ -153,7 +181,7 @@ func (c *Client) writeMessages() {
 				return
 			}
 
-			data, err := json.Marshal(message)
+			data, err := response.EncodeJSON(message)
 			if err != nil {
 				log.Println(err)
 				return // closes the connection, should we really

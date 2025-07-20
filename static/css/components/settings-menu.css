@@ -1,0 +1,273 @@
+/* Settings Menu Component */
+
+/* Controls Container */
+.controls {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-xs);
+}
+
+/* Settings Button */
+.settings-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--gap-small);
+    border-radius: var(--radius-small);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-fast);
+    position: relative;
+}
+
+.settings-btn:hover {
+    background-color: var(--bg-hover);
+}
+
+.settings-icon {
+    width: var(--svg-size-medium);
+    height: var(--svg-size-medium);
+}
+
+/* Settings Card - matches other cards */
+.settings-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-medium);
+    margin-bottom: var(--gap-medium);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Settings Menu Container */
+.settings-menu {
+    /* Expand/collapse animation like comments */
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+    padding: 0;
+}
+
+.settings-menu.expanded {
+    max-height: 200px;
+    opacity: 1;
+    padding: var(--gap-medium);
+}
+
+/* Remove speech bubble arrows since it's now a card */
+
+/* Menu Items */
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-small);
+    width: 100%;
+    padding: var(--gap-small) var(--gap-medium);
+    background: none;
+    border: none;
+    border-radius: var(--radius-medium);
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: var(--font-size-small);
+    transition: background-color var(--transition-fast);
+    text-align: left;
+}
+
+.menu-item img {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+/* Theme Toggle Button */
+.theme-btn {
+    color: var(--text-secondary);
+}
+
+.theme-btn:hover {
+    background-color: var(--bg-hover);
+}
+
+/* Dark mode: grey sun icon */
+.theme-btn img {
+    filter: brightness(0) saturate(100%) invert(64%) sepia(8%) saturate(451%) hue-rotate(169deg) brightness(93%) contrast(89%);
+}
+
+/* Light mode: black moon icon */
+[data-theme="light"] .theme-btn img {
+    filter: brightness(0) saturate(100%) invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(0%) contrast(100%);
+}
+
+/* Logout Button */
+.logout-btn {
+    color: #dc3545;
+    margin-top: var(--gap-small);
+}
+
+.logout-btn:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.logout-btn .logout-icon-svg {
+    filter: brightness(0) saturate(100%) invert(24%) sepia(85%) saturate(2020%) hue-rotate(342deg) brightness(94%) contrast(93%);
+}
+
+/* Menu Separator */
+.menu-separator {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: var(--gap-small) 0;
+}
+
+/* Ensure user profile header is positioned relative for menu positioning */
+.user-profile-header {
+    position: relative;
+}
+
+/* Notification Badge */
+.notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    min-width: 16px;
+    height: 16px;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 10;
+}
+
+/* Notifications Modal - inherits from chat modal styling */
+.notifications-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+/* Centered modal (default - full screen overlay) */
+.notifications-modal.centered {
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Positioned modal (next to button when viewport allows) */
+.notifications-modal.positioned {
+    background: none;
+    pointer-events: none;
+}
+
+.notifications-modal.positioned .notifications-content {
+    pointer-events: all;
+    position: absolute;
+    left: var(--modal-left, 0);
+    top: var(--modal-top, 0);
+}
+
+/* Notifications content - styled like chat modal */
+.notifications-content {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-medium);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-width: 350px;
+    width: 350px;
+    max-height: 400px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header - reuse chat modal header structure */
+.notifications-header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--gap-small) var(--gap-medium);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 50px;
+}
+
+.notifications-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: var(--font-size-medium);
+}
+
+.notifications-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: var(--gap-xs);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-small);
+    transition: background-color var(--transition-fast);
+}
+
+.notifications-close:hover {
+    background-color: var(--bg-hover);
+}
+
+/* List - styled like chat messages area */
+.notifications-list {
+    padding: var(--gap-medium);
+    overflow-y: auto;
+    flex: 1;
+    background: var(--bg-primary);
+}
+
+.no-notifications {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: var(--gap-large) var(--gap-medium);
+    font-style: italic;
+}
+
+.notification-card {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-medium);
+    padding: var(--gap-medium);
+    border-radius: var(--radius-medium);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+    margin-bottom: var(--gap-small);
+    border: 1px solid transparent;
+}
+
+.notification-card:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-color);
+}
+
+.notification-card:last-child {
+    margin-bottom: 0;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-text {
+    color: var(--text-primary);
+    font-size: var(--font-size-small);
+    line-height: 1.4;
+}

@@ -1,0 +1,67 @@
+/* CSS Variables for Theme System */
+
+:root {
+    /* Dark Theme (Default) */
+    --bg-primary: #2c2f33;
+    --bg-secondary: #23272a;
+    --bg-tertiary: #36393f;
+    --bg-hover: #40444b;
+    
+    --text-primary: #dcddde;
+    --text-secondary: #8e9297;
+    --text-inverse: #ffffff;
+    
+    --accent-primary: #5865f2;
+    --accent-hover: #4f5acb;
+    --accent-success: #3ba55c;
+    
+    --border-color: #40444b;
+    
+    /* Spacing */
+    --gap-small: 8px;
+    --gap-medium: 15px;
+    --gap-large: 20px;
+    
+    /* Border radius */
+    --radius-small: 4px;
+    --radius-medium: 8px;
+    --radius-large: 18px;
+    
+    /* Typography - Responsive */
+    --font-size-small: clamp(12px, 2.5vw, 14px);
+    --font-size-medium: clamp(14px, 3vw, 16px);
+    --font-size-large: clamp(16px, 3.5vw, 18px);
+    --font-size-xl: clamp(18px, 4vw, 24px);
+    
+    /* Form sizing - Responsive */
+    --input-padding: clamp(10px, 2vw, 16px);
+    --button-padding-v: clamp(12px, 2.5vw, 16px);
+    --button-padding-h: clamp(20px, 4vw, 28px);
+    
+    /* SVG Icon Sizes */
+    --svg-size-small: 16px;
+    --svg-size-medium: 24px;
+    --svg-size-large: 32px;
+    
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-medium: 0.3s ease;
+}
+
+/* Light Theme */
+[data-theme="light"] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f6f7f8;
+    --bg-tertiary: #e3e5e8;
+    --bg-hover: #ebedef;
+    
+    --text-primary: #2e3338;
+    --text-secondary: #747f8d;
+    --text-inverse: #ffffff;
+    
+    --accent-primary: #5865f2;
+    --accent-hover: #4f5acb;
+    --accent-success: #3ba55c;
+    
+    --border-color: #e3e5e8;
+}

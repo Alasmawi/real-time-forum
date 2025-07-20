@@ -1,0 +1,50 @@
+/* Navigation Card Component */
+.nav-card {
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-medium);
+    padding: var(--gap-large);
+    height: fit-content;
+    box-shadow: var(--shadow-small);
+    transition: background-color var(--transition-fast);
+}
+
+.nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-small);
+}
+
+.nav-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    padding: var(--gap-small) var(--gap-medium);
+    border-radius: var(--radius-small);
+    transition: all var(--transition-fast);
+    display: block;
+    text-align: center;
+    font-weight: 500;
+}
+
+.nav-link:hover, .nav-link.active {
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+/* Mobile Navigation */
+@media (max-width: 1024px) {
+    .nav-card {
+        width: 100%;
+    }
+    
+    .nav-links {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-card {
+        padding: var(--gap-medium);
+    }
+}

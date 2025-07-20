@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    height: 100vh;
+    overflow: hidden;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+/* Main Layout */
+.app-layout {
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    position: fixed;
+    top: var(--gap-large);
+    right: var(--gap-large);
+    background-color: var(--accent-primary);
+    color: var(--text-inverse);
+    border: none;
+    padding: var(--gap-small) var(--gap-medium);
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    font-weight: 500;
+    z-index: 1000;
+    transition: background-color var(--transition-fast);
+}
+
+.theme-toggle:hover {
+    background-color: var(--accent-hover);
+}

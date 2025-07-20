@@ -61,22 +61,10 @@ func (db DB) CreateDatabase() error {
         hashed_password TEXT NOT NULL
     );`
 
-	const CreateNotificationTable = `
-    CREATE TABLE IF NOT EXISTS notification (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        post_id INTEGER NOT NULL,
-        message TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES user(id),
-        FOREIGN KEY (post_id) REFERENCES post(id)
-    );`
-
 	const CreateMessageTable = `
     CREATE TABLE IF NOT EXISTS message (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         sender_id INTEGER NOT NULL,
-        sender_name TEXT NOT NULL,
         receiver_id INTEGER NOT NULL,
         message TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -91,7 +79,6 @@ func (db DB) CreateDatabase() error {
 		CreatePostHasCategoryTable,
 		CreateSessionTable,
 		CreateUserTable,
-		CreateNotificationTable,
 		CreateMessageTable,
 	}
 

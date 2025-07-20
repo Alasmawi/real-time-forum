@@ -1,0 +1,95 @@
+.reply-box {
+    background: var(--bg-primary);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-medium);
+    padding: var(--gap-medium);
+    margin-bottom: var(--gap-medium);
+}
+
+.reply-header {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-small);
+    margin-bottom: var(--gap-small);
+}
+
+.reply-username {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: var(--font-size-medium);
+}
+
+.reply-textarea {
+    width: 100%;
+    height: 100px;
+    resize: vertical;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-small);
+    padding: var(--gap-small);
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: border-color var(--transition-fast);
+    box-sizing: border-box;
+    min-height: 80px;
+    max-height: 200px;
+}
+
+.reply-textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    background-color: var(--bg-primary);
+}
+
+
+.reply-submit-btn {
+    background-color: var(--accent-primary);
+    color: var(--text-inverse);
+    border: none;
+    padding: var(--gap-small) var(--gap-medium);
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color var(--transition-fast);
+}
+
+.reply-submit-btn:hover {
+    background-color: var(--accent-hover);
+}
+
+.reply-submit-btn:disabled {
+    background-color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+.reply-cancel-btn {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: var(--gap-small) var(--gap-medium);
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.reply-cancel-btn:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--accent-primary);
+}
+
+.reply-footer {
+    margin-top: var(--gap-small);
+}
+
+.reply-footer .character-counter {
+    text-align: left;
+    font-size: var(--font-size-small);
+    color: var(--text-secondary);
+    margin-bottom: var(--gap-small);
+}
+
+.reply-actions {
+    display: flex;
+    gap: var(--gap-small);
+}

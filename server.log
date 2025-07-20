@@ -1,0 +1,64 @@
+time=2025-07-20T08:10:34.900+03:00 level=INFO msg="starting server" server.addr=:8080
+DEBUG: Session lookup - cookie value: 3c58c35e-8ebb-4c18-a1b8-b031610a17b7, found: true, err: <nil>
+DEBUG: Authenticate - user added to context: true
+DEBUG: Authorize - user in context: true
+2025/07/20 08:10:41 New WebSocket connection
+time=2025-07-20T08:10:41.678+03:00 level=INFO msg=access user.ip=[::1]:33370 request.method=GET request.url=/protected/ws request.proto=HTTP/1.1 response.status=200 response.size=0
+2025/07/20 08:10:41 sendInitialStatusUpdate for client 1: found 0 online users
+2025/07/20 08:10:41 No online users to send to client 1, skipping initial status update
+DEBUG: Session lookup - cookie value: 8eefd753-6fb4-41c8-ae2c-976542cf25b5, found: true, err: <nil>
+DEBUG: Authenticate - user added to context: true
+DEBUG: Authorize - user in context: true
+2025/07/20 08:10:42 New WebSocket connection
+time=2025-07-20T08:10:42.214+03:00 level=INFO msg=access user.ip=[::1]:33372 request.method=GET request.url=/protected/ws request.proto=HTTP/1.1 response.status=200 response.size=0
+2025/07/20 08:10:42 sendInitialStatusUpdate for client 1017: found 1 online users
+2025/07/20 08:10:42 Sent initial status update to client 1017 with 1 online users
+2025/07/20 08:10:42 sent message
+2025/07/20 08:10:44 sent message
+2025/07/20 08:10:44 sent message
+2025/07/20 08:10:50 ping
+2025/07/20 08:10:50 pong
+2025/07/20 08:10:51 ping
+2025/07/20 08:10:51 pong
+2025/07/20 08:10:59 ping
+2025/07/20 08:10:59 pong
+2025/07/20 08:11:00 ping
+2025/07/20 08:11:00 pong
+2025/07/20 08:11:08 ping
+2025/07/20 08:11:08 pong
+2025/07/20 08:11:09 ping
+2025/07/20 08:11:09 pong
+2025/07/20 08:11:14 sent message
+2025/07/20 08:11:17 ping
+2025/07/20 08:11:17 pong
+2025/07/20 08:11:18 ping
+2025/07/20 08:11:18 pong
+2025/07/20 08:11:18 sent message
+2025/07/20 08:11:26 ping
+2025/07/20 08:11:26 pong
+2025/07/20 08:11:27 ping
+2025/07/20 08:11:27 pong
+2025/07/20 08:11:35 ping
+2025/07/20 08:11:35 pong
+2025/07/20 08:11:36 ping
+2025/07/20 08:11:36 pong
+2025/07/20 08:11:44 ping
+2025/07/20 08:11:44 pong
+2025/07/20 08:11:45 ping
+2025/07/20 08:11:45 pong
+2025/07/20 08:11:48 sent message
+2025/07/20 08:11:51 sent message
+2025/07/20 08:11:52 sent message
+2025/07/20 08:11:53 ping
+2025/07/20 08:11:53 pong
+2025/07/20 08:11:54 sent message
+2025/07/20 08:11:54 ping
+2025/07/20 08:11:54 pong
+2025/07/20 08:12:02 ping
+2025/07/20 08:12:02 pong
+2025/07/20 08:12:03 ping
+2025/07/20 08:12:03 pong
+2025/07/20 08:12:11 ping
+2025/07/20 08:12:11 pong
+2025/07/20 08:12:12 ping
+2025/07/20 08:12:12 pong

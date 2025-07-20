@@ -68,6 +68,7 @@ func run(logger *slog.Logger) error {
 
 	// Initialize WebSocket manager
 	app.WSManager = websocket.NewWebsocketManager()
+	app.WSManager.DB = db
 
 	return app.ServeHTTP()
 }

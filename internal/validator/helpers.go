@@ -24,6 +24,18 @@ func MaxRunes(value string, n int) bool {
 	return utf8.RuneCountInString(value) <= n
 }
 
+func MinInt(value, n int) bool {
+	return value >= n
+}
+
+func MaxInt(value, n int) bool {
+	return value <= n
+}
+
+func Between(value, min, max int) bool {
+	return value >= min && value <= max
+}
+
 // func Between[T constraints.Ordered](value, min, max T) bool {
 // 	return value >= min && value <= max
 // }

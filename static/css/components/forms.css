@@ -1,0 +1,179 @@
+/* Forms */
+.form-group {
+    margin-bottom: var(--gap-small);
+}
+
+.form-label {
+    display: block;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 4px;
+    font-size: var(--font-size-small);
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-small);
+    color: var(--text-primary);
+    font-size: var(--font-size-small);
+    transition: border-color var(--transition-fast);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+/* Custom dropdown styling */
+select.form-input {
+    transition: all var(--transition-fast), transform 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+select.form-input:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+select.form-input option {
+    padding: 8px 12px;
+}
+
+.form-button {
+    background-color: var(--accent-primary);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: var(--radius-small);
+    font-weight: 600;
+    font-size: var(--font-size-medium);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+    min-height: 42px;
+}
+
+.form-button:hover {
+    background-color: var(--accent-hover);
+}
+
+.form-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.form-button.full-width {
+    width: 100%;
+}
+
+/* Form containers */
+.form-container {
+    width: clamp(300px, 40vw, 400px);
+    padding: var(--gap-medium);
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-medium);
+    transition: background-color var(--transition-fast);
+    
+    /* Perfect centering */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.form-container.register {
+    width: clamp(320px, 35vw, 450px);
+}
+
+.form-title {
+    text-align: center;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: clamp(18px, 4vw, 22px);
+    font-weight: 600;
+}
+
+.form-footer {
+    text-align: center;
+    margin-top: 1rem;
+    color: var(--text-secondary);
+    font-size: var(--font-size-small);
+}
+
+.form-footer a {
+    color: var(--accent-primary);
+    text-decoration: none;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Smooth Error Animations */
+.form-error {
+    color: #f44336;
+    font-size: 11px;
+    margin-top: 3px;
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-error:not(:empty) {
+    max-height: 2em;
+    opacity: 1;
+    transform: translateY(0);
+    margin-bottom: 3px;
+}
+
+.form-input.error {
+    border-color: #f44336;
+    animation: shake 0.3s ease-in-out;
+}
+
+.form-input.error:focus {
+    border-color: #f44336;
+    box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2);
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+
+.general-error {
+    background-color: rgba(244, 67, 54, 0.1);
+    border: 1px solid #f44336;
+    border-radius: var(--radius-small);
+    padding: 0;
+    margin-bottom: var(--gap-small);
+    color: #f44336;
+    text-align: center;
+    font-size: 11px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.general-error:not(:empty) {
+    max-height: 4em;
+    opacity: 1;
+    transform: scaleY(1);
+    padding: 8px 12px;
+}

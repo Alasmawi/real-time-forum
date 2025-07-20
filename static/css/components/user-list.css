@@ -1,0 +1,212 @@
+/* User List Card Component */
+.user-list {
+    width: 300px;
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-medium);
+    padding: var(--gap-medium);
+    overflow-y: auto;
+    height: fit-content;
+    max-height: 80vh;
+    box-shadow: var(--shadow-small);
+    transition: background-color var(--transition-fast);
+}
+
+/* Custom scrollbar for user list - matches comments/content styling */
+.user-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.user-list::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-small);
+}
+
+.user-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: var(--radius-small);
+    transition: background var(--transition-fast);
+}
+
+.user-list::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+}
+
+/* Firefox scrollbar */
+.user-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) var(--bg-secondary);
+}
+
+
+.user-section {
+    margin-bottom: var(--gap-medium);
+}
+
+.user-section-title {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: var(--gap-small);
+    padding: 0 var(--gap-small);
+}
+
+.user-item {
+    background: var(--bg-primary);
+    border-radius: var(--radius-medium);
+    border: 1px solid var(--border-color);
+    padding: var(--gap-medium);
+    margin-bottom: var(--gap-medium);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--gap-medium);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+    position: relative;
+}
+
+.user-item:hover {
+    background-color: var(--bg-hover);
+}
+
+.user-item.online {
+    opacity: 1;
+}
+
+.user-item.offline {
+    opacity: 0.5;
+}
+
+.online-indicator,
+.status-dot {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--bg-secondary);
+    border-radius: 50%;
+}
+
+.online-indicator,
+.status-dot.online {
+    background-color: var(--accent-success);
+}
+
+.status-dot.offline {
+    background-color: var(--text-secondary);
+}
+
+.user-item .user-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-item .typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.75rem;
+    color: var(--accent-primary);
+    flex-shrink: 0;
+    margin-left: 4px;
+    padding: 0;
+}
+
+.user-item .user-status.online {
+    color: var(--accent-primary);
+}
+
+.user-item .user-status.offline {
+    color: var(--text-secondary);
+}
+
+/* Typing indicator styles for user status area (legacy) */
+
+/* Show user status when typing indicator is visible */
+.user-status:has(.typing-indicator:not([style*="display: none"])) {
+    height: 1.2em;
+}
+
+/* Fallback for browsers that don't support :has() */
+.user-status.typing-active {
+    height: 1.2em;
+}
+
+.typing-dots {
+    display: flex;
+    gap: 2px;
+}
+
+.typing-dots span {
+    width: 4px;
+    height: 4px;
+    background-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: typing-bounce 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0;
+}
+
+@keyframes typing-bounce {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.typing-text {
+    font-style: italic;
+    font-size: 0.7rem;
+}
+
+.user-last-message {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-list-empty {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: var(--gap-large);
+}
+
+/* Mobile User List */
+@media (max-width: 1024px) {
+    .user-list {
+        width: 100%;
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .user-list {
+        padding: var(--gap-medium);
+    }
+}

@@ -55,6 +55,11 @@ func (app *Application) badRequest(w http.ResponseWriter, r *http.Request, err e
 	app.errorMessage(w, r, http.StatusBadRequest, err.Error(), nil)
 }
 
+func (app *Application) Conflict(w http.ResponseWriter, r *http.Request) {
+	message := "Already authenticated"
+	app.errorMessage(w, r, http.StatusConflict, message, nil)
+}
+
 func (app *Application) failedValidation(w http.ResponseWriter, r *http.Request, v validator.Validator) {
 	err := response.JSON(w, http.StatusUnprocessableEntity, v)
 	if err != nil {

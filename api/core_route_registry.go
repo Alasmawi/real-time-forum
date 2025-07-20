@@ -2,76 +2,70 @@ package api
 
 import (
 	"net/http"
+	"slices"
 	"strings"
 )
 
 // RouteRegistry tracks routes and their allowed methods while building muxes
 type RouteRegistry struct {
+	app          *Application
 	routes       map[string][]string
-	rootMux      *http.ServeMux
+	publicMux    *http.ServeMux
+	guestMux     *http.ServeMux
 	protectedMux *http.ServeMux
 }
 
-// NewRouteRegistry creates a new route registry
 func NewRouteRegistry() *RouteRegistry {
 	return &RouteRegistry{
 		routes:       make(map[string][]string),
-		rootMux:      http.NewServeMux(),
+		publicMux:    http.NewServeMux(),
+		guestMux:     http.NewServeMux(),
 		protectedMux: http.NewServeMux(),
 	}
 }
 
-// GET registers a GET route on the appropriate mux
+// routeToMux determines which mux to use and returns the correct mux and stripped path.
+// Easily expandable for new prefixes and muxes.
+func (rr *RouteRegistry) routeToMux(path string) (*http.ServeMux, string) {
+	switch {
+	case strings.HasPrefix(path, "/guest/"):
+		strippedPath := strings.TrimPrefix(path, "/guest")
+		return rr.guestMux, strippedPath
+	case strings.HasPrefix(path, "/protected/"):
+		strippedPath := strings.TrimPrefix(path, "/protected")
+		return rr.protectedMux, strippedPath
+	default:
+		// All other routes go to publicMux
+		return rr.publicMux, path
+	}
+}
+
+// GET registers a GET route on the appropriate mux.
 func (rr *RouteRegistry) GetMethod(path string, handler http.HandlerFunc) *RouteRegistry {
 	rr.routes[path] = append(rr.routes[path], "GET")
-
-	switch {
-	case strings.HasPrefix(path, "/protected/"):
-		// Strip /protected for the actual mux registration
-		strippedPath := strings.TrimPrefix(path, "/protected")
-		rr.protectedMux.HandleFunc("GET "+strippedPath, handler)
-	default:
-		rr.rootMux.HandleFunc("GET "+path, handler)
-	}
+	mux, finalPath := rr.routeToMux(path)
+	mux.HandleFunc("GET "+finalPath, handler)
 	return rr
 }
 
-// POST registers a POST route on the appropriate mux
+// POST registers a POST route on the appropriate mux.
 func (rr *RouteRegistry) PostMethod(path string, handler http.HandlerFunc) *RouteRegistry {
 	rr.routes[path] = append(rr.routes[path], "POST")
-
-	switch {
-	case strings.HasPrefix(path, "/protected/"):
-		// Strip /protected for the actual mux registration
-		strippedPath := strings.TrimPrefix(path, "/protected")
-		rr.protectedMux.HandleFunc("POST "+strippedPath, handler)
-	default:
-		rr.rootMux.HandleFunc("POST "+path, handler)
-	}
+	mux, finalPath := rr.routeToMux(path)
+	mux.HandleFunc("POST "+finalPath, handler)
 	return rr
 }
 
-// HandleFunc registers a route without method prefix (like your current catchall)
+// HandleFunc registers a route without method prefix
 func (rr *RouteRegistry) HandleFunc(pattern string, handler http.HandlerFunc) *RouteRegistry {
-	switch {
-	case strings.HasPrefix(pattern, "/protected/"):
-		strippedPattern := strings.TrimPrefix(pattern, "/protected")
-		rr.protectedMux.HandleFunc(strippedPattern, handler)
-	default:
-		rr.rootMux.HandleFunc(pattern, handler)
-	}
-	return rr
-}
-
-// Handle registers a route with a Handler (like your current Handle calls)
-func (rr *RouteRegistry) Handle(pattern string, handler http.Handler) *RouteRegistry {
-	rr.rootMux.Handle(pattern, handler)
+	mux, finalPattern := rr.routeToMux(pattern)
+	mux.HandleFunc(finalPattern, handler)
 	return rr
 }
 
 // GetMuxes returns the built muxes
-func (rr *RouteRegistry) GetMuxes() (*http.ServeMux, *http.ServeMux) {
-	return rr.rootMux, rr.protectedMux
+func (rr *RouteRegistry) GetMuxes() (*http.ServeMux, *http.ServeMux, *http.ServeMux) {
+	return rr.publicMux, rr.guestMux, rr.protectedMux
 }
 
 // ValidateMethodsMiddleware returns a middleware that validates HTTP methods
@@ -81,16 +75,14 @@ func (rr *RouteRegistry) ValidateMethod() func(http.Handler) http.Handler {
 			// Check if this path has registered methods
 			if allowedMethods, exists := rr.routes[r.URL.Path]; exists {
 				// Check if current method is allowed
-				for _, method := range allowedMethods {
-					if r.Method == method {
-						next.ServeHTTP(w, r)
-						return
-					}
+				if slices.Contains(allowedMethods, r.Method) {
+					next.ServeHTTP(w, r)
+					return
 				}
 
 				// Method not allowed
 				w.Header().Set("Allow", strings.Join(allowedMethods, ", "))
-				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+				rr.app.methodNotAllowed(w, r)
 				return
 			}
 

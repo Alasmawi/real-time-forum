@@ -1,0 +1,85 @@
+/* Avatar Component - Shared styles for user avatars */
+.avatar {
+    border-radius: 50%;
+    background: var(--accent-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+    position: relative;
+}
+
+/* Avatar sizes */
+.avatar.small {
+    width: 24px;
+    height: 24px;
+    font-size: 0.7rem;
+}
+
+.avatar.medium {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+}
+
+.avatar.large {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+}
+
+.avatar.extra-large {
+    width: 48px;
+    height: 48px;
+    font-size: 1.4rem;
+}
+
+/* Online indicator */
+.avatar .online-indicator {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background: #4CAF50;
+    border: 2px solid var(--bg-primary);
+    border-radius: 50%;
+}
+
+/* Online indicator sizes for different avatar sizes */
+.avatar.small .online-indicator {
+    width: 8px;
+    height: 8px;
+    bottom: -1px;
+    right: -1px;
+    border-width: 1px;
+}
+
+.avatar.medium .online-indicator {
+    width: 10px;
+    height: 10px;
+    bottom: -2px;
+    right: -2px;
+}
+
+.avatar.large .online-indicator {
+    width: 12px;
+    height: 12px;
+    bottom: -2px;
+    right: -2px;
+}
+
+.avatar.extra-large .online-indicator {
+    width: 14px;
+    height: 14px;
+    bottom: -2px;
+    right: -2px;
+}
+
+/* Avatar color variations */
+.avatar.primary { background: var(--accent-primary); }
+.avatar.secondary { background: #6c757d; }
+.avatar.success { background: #28a745; }
+.avatar.warning { background: #ffc107; color: #212529; }
+.avatar.danger { background: #dc3545; }
+.avatar.info { background: #17a2b8; }

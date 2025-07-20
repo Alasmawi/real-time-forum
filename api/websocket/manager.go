@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	db "reboot01.com/js/realtime-forum/internal/database"
@@ -44,22 +45,31 @@ type WebsocketManager struct {
 	sync.RWMutex
 
 	handlers map[string]EventHandler
+	// userListTicker for periodic user list updates
+	userListTicker *time.Ticker
+	stopTicker     chan bool
+	// previousOnlineUsers for change detection
+	previousOnlineUsers map[int]UserStatusInfo
 }
 
 // Initializes all the values inside manager.
 func NewWebsocketManager() *WebsocketManager {
 	m := &WebsocketManager{
-		clients:  make(ClientList),
-		handlers: make(map[string]EventHandler),
+		clients:             make(ClientList),
+		handlers:            make(map[string]EventHandler),
+		stopTicker:          make(chan bool),
+		previousOnlineUsers: make(map[int]UserStatusInfo),
 	}
 	m.setupEventHandlers()
+	m.startPeriodicUserListBroadcast()
 	return m
 }
 
 // setupEventHandlers configures and adds all handlers
 func (m *WebsocketManager) setupEventHandlers() {
 	m.handlers[EventSendMessage] = SendMessageHandler
-	m.handlers[EventRequestUserList] = RequestUserListHandler
+	m.handlers[EventSendTyping] = SendTypingHandler
+	// Note: EventRequestUserList removed - server now broadcasts periodically
 }
 
 // routeEvent is used to make sure the correct event goes into the correct handler
@@ -89,6 +99,8 @@ func (m *WebsocketManager) HttpToWebsocket(w http.ResponseWriter, r *http.Reques
 	client := NewClient(conn, m, userID, username, sessionID)
 	// Adds newly created client to manager.
 	m.addClient(client)
+	// Send initial status update to new client
+	go m.sendInitialStatusUpdate(client)
 	// Starts the read / write processes.
 	go client.readMessages()
 	go client.writeMessages()
@@ -120,43 +132,3 @@ func (m *WebsocketManager) removeClient(client *Client) {
 	}
 }
 
-// GetOnlineUsersData returns online user data for frontend
-func (m *WebsocketManager) GetOnlineUsersData() []map[string]interface{} {
-	m.RLock()
-	defer m.RUnlock()
-
-	var users []map[string]interface{}
-	for client := range m.clients {
-		users = append(users, map[string]interface{}{
-			"id":       client.userID,
-			"username": client.username,
-			"status":   "online",
-		})
-	}
-	return users
-}
-
-// GetOnlineUserIDs returns a slice of user IDs that are currently online
-func (m *WebsocketManager) GetOnlineUserIDs() []int {
-	m.RLock()
-	defer m.RUnlock()
-
-	var userIDs []int
-	for client := range m.clients {
-		userIDs = append(userIDs, client.userID)
-	}
-	return userIDs
-}
-
-// getClientByUserID finds a client by their user ID
-func (m *WebsocketManager) getClientByUserID(userID int) *Client {
-	m.RLock()
-	defer m.RUnlock()
-
-	for client := range m.clients {
-		if client.userID == userID {
-			return client
-		}
-	}
-	return nil
-}

@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
-	"time"
 
 	"reboot01.com/js/realtime-forum/internal/cookie"
 )
@@ -22,15 +20,15 @@ type User struct {
 	HashedPassword string `db:"hashed_password" json:"-"`
 }
 
-func (db *DB) InsertUser(email, hashedPassword string) (int, error) {
+func (db *DB) InsertUser(firstName, lastName, username, email, hashedPassword string, age int, sex bool) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	query := `
-    INSERT INTO user (created, email, hashed_password)
-    VALUES ($1, $2, $3)`
+    INSERT INTO user (f_name, l_name, username, email, hashed_password, age, sex)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
-	result, err := db.ExecContext(ctx, query, time.Now(), email, hashedPassword)
+	result, err := db.ExecContext(ctx, query, firstName, lastName, username, email, hashedPassword, age, sex)
 	if err != nil {
 		return 0, err
 	}
@@ -127,40 +125,53 @@ func (db *DB) UpdateUserHashedPassword(id int, hashedPassword string) error {
 	return err
 }
 
-// GetOfflineUsers returns users not currently online with pagination
-func (db *DB) GetOfflineUsers(offset, limit int, onlineUserIDs []int) ([]User, error) {
+// GetTotalUserCountExcludingUser returns the total number of users excluding a specific user
+func (db *DB) GetTotalUserCountExcludingUser(currentUserID int) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
-	var users []User
-	var query string
-	var args []interface{}
+	var count int
+	query := `SELECT COUNT(*) FROM user WHERE id != ?`
 
-	if len(onlineUserIDs) == 0 {
-		// No online users to exclude
-		query = `SELECT id, username FROM user ORDER BY username ASC LIMIT $1 OFFSET $2`
-		args = []interface{}{limit, offset}
-	} else {
-		// Exclude online users
-		placeholders := make([]string, len(onlineUserIDs))
-		for i := range onlineUserIDs {
-			placeholders[i] = fmt.Sprintf("$%d", i+1)
-		}
-
-		query = `SELECT id, username FROM user 
-         WHERE id NOT IN (` + strings.Join(placeholders, ",") + `) 
-         ORDER BY username ASC 
-         LIMIT $` + fmt.Sprintf("%d", len(onlineUserIDs)+1) + ` OFFSET $` + fmt.Sprintf("%d", len(onlineUserIDs)+2)
-
-		args = make([]interface{}, len(onlineUserIDs)+2)
-		for i, id := range onlineUserIDs {
-			args[i] = id
-		}
-		args[len(onlineUserIDs)] = limit
-		args[len(onlineUserIDs)+1] = offset
+	err := db.GetContext(ctx, &count, query, currentUserID)
+	if err != nil {
+		return 0, err
 	}
 
-	err := db.SelectContext(ctx, &users, query, args...)
+	return count, nil
+}
+
+// UserWithLastMessage represents a user with their last message time
+type UserWithLastMessage struct {
+	ID              int     `db:"id" json:"id"`
+	Username        string  `db:"username" json:"username"`
+	LastMessageTime *string `db:"last_message_time" json:"last_message_time"`
+}
+
+// GetPaginatedUsersForList returns paginated users ordered by recent chat activity, then alphabetically
+func (db *DB) GetPaginatedUsersForList(currentUserID int, offset, limit int) ([]UserWithLastMessage, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
+
+	query := `
+		SELECT u.id, u.username, 
+			CASE WHEN MAX(m.created_at) IS NOT NULL 
+				THEN datetime(MAX(m.created_at))
+				ELSE NULL 
+			END as last_message_time
+		FROM user u
+		LEFT JOIN message m ON (u.id = m.sender_id OR u.id = m.receiver_id) 
+			AND (m.sender_id = ? OR m.receiver_id = ?)
+		WHERE u.id != ?
+		GROUP BY u.id, u.username
+		ORDER BY 
+			CASE WHEN MAX(m.created_at) IS NOT NULL THEN 0 ELSE 1 END,
+			MAX(m.created_at) DESC,
+			u.username ASC
+		LIMIT ? OFFSET ?`
+
+	var users []UserWithLastMessage
+	err := db.SelectContext(ctx, &users, query, currentUserID, currentUserID, currentUserID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -168,36 +179,28 @@ func (db *DB) GetOfflineUsers(offset, limit int, onlineUserIDs []int) ([]User, e
 	return users, nil
 }
 
-// GetUsersOrderedByActivity returns users sorted by last message activity with current user
-func (db *DB) GetUsersOrderedByActivity(currentUserID int) ([]User, error) {
+// GetUserMessagePriority returns a single user with their last message time for a specific requesting user
+func (db *DB) GetUserMessagePriority(currentUserID, targetUserID int) (*UserWithLastMessage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
-	var users []User
-
 	query := `
-    SELECT u.id, u.username,
-           MAX(CASE 
-               WHEN m.sender_id = $1 OR m.receiver_id = $2 
-               THEN m.created_at 
-               ELSE NULL 
-           END) as last_message_time
-    FROM user u
-    LEFT JOIN message m ON (
-        (m.sender_id = u.id AND m.receiver_id = $3) OR 
-        (m.sender_id = $4 AND m.receiver_id = u.id)
-    )
-    WHERE u.id != $5 
-    GROUP BY u.id, u.username
-    ORDER BY 
-        CASE WHEN last_message_time IS NULL THEN 1 ELSE 0 END,
-        last_message_time DESC NULLS LAST,
-        u.username ASC`
+		SELECT u.id, u.username, 
+			CASE WHEN MAX(m.created_at) IS NOT NULL 
+				THEN datetime(MAX(m.created_at))
+				ELSE NULL 
+			END as last_message_time
+		FROM user u
+		LEFT JOIN message m ON (u.id = m.sender_id OR u.id = m.receiver_id) 
+			AND (m.sender_id = ? OR m.receiver_id = ?)
+		WHERE u.id = ?
+		GROUP BY u.id, u.username`
 
-	err := db.SelectContext(ctx, &users, query, currentUserID, currentUserID, currentUserID, currentUserID, currentUserID)
+	var user UserWithLastMessage
+	err := db.GetContext(ctx, &user, query, currentUserID, currentUserID, targetUserID)
 	if err != nil {
 		return nil, err
 	}
 
-	return users, nil
+	return &user, nil
 }

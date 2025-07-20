@@ -8,34 +8,47 @@ func (app *Application) routes() http.Handler {
 	// Create route registry
 	registry := NewRouteRegistry()
 
-	// Register static file handlers
+	// Public routes (no authentication required)
 	registry.HandleFunc("/js/", http.StripPrefix("/js/", app.neuteredFileHandler("./static/js/")).ServeHTTP).
-		HandleFunc("/css/", http.StripPrefix("/css/", app.neuteredFileHandler("./static/css/")).ServeHTTP)
-
-	// Register API routes with method validation
-	registry.GetMethod("/v1/status", app.status).
-		GetMethod("/v1/checkauth", app.checkAuthenticated).
+		HandleFunc("/css/", http.StripPrefix("/css/", app.neuteredFileHandler("./static/css/")).ServeHTTP).
+		HandleFunc("/images/", http.StripPrefix("/images/", app.neuteredFileHandler("./static/images/")).ServeHTTP).
+		GetMethod("/v1/status", app.status).
 		GetMethod("/v1/404", app.notFound).
 		PostMethod("/v1/login", app.createAuthenticationToken).
-		PostMethod("/v1/register", app.createUser)
+		PostMethod("/v1/register", app.createUser) 
 
-	// Register protected routes with method validation
-	// Reminder: implement custom JSON encoder for websocket messages
+	// Guest routes (optional authentication - guests allowed, user context if authenticated)
+	registry.GetMethod("/guest/v1/posts", app.fetchPosts).
+		GetMethod("/guest/v1/categories", app.fetchCategories).
+		GetMethod("/guest/v1/comments", app.fetchPostComments)
 
+	// Protected routes (authentication required)
 	registry.GetMethod("/protected/ws", app.ServeWebSocket).
-		GetMethod("/protected/v1/posts", app.fetchPosts).
-		PostMethod("/protected/v1/comments", app.fetchPostComments).
-		GetMethod("/protected/v1/categories", app.fetchCategories).
-		PostMethod("/protected/v1/newpost", app.newPostHandler).
+		GetMethod("/protected/v1/user/me", app.fetchUserProfile).
+		GetMethod("/protected/v1/user/{id}/message-priority", app.fetchUserMessagePriority).
+		GetMethod("/protected/v1/user-list", app.fetchUserList).
+		GetMethod("/protected/v1/message-history", app.getMessageHistory).
+		PostMethod("/protected/v1/newcomment", app.createComment).
+		PostMethod("/protected/v1/newpost", app.createPost).
 		PostMethod("/protected/v1/logout", app.logout)
 
-	rootMux, protectedMux := registry.GetMuxes()
+	publicMux, guestMux, protectedMux := registry.GetMuxes()
 
-	registry.HandleFunc("/", app.serveIndex)
+	// Add catchAll to publicMux for SPA routes
+	publicMux.HandleFunc("/", app.catchAll)
 
-	// Mounts protected routes with a middleware under /protected/ prefix
-	protectedRouteHandler := http.StripPrefix("/protected", app.authorize(protectedMux))
-	rootMux.Handle("/protected/", protectedRouteHandler)
+	// Create final mux to mount different route groups with different middleware
+	finalMux := http.NewServeMux()
 
-	return app.logAccess(app.recoverPanic(app.authenticate(registry.ValidateMethod()(rootMux))))
+	// Mount public routes (no authentication) - these include static files and public API
+	finalMux.Handle("/", publicMux)
+
+	// Mount guest routes (optional authentication - guests allowed)
+	finalMux.Handle("/guest/", http.StripPrefix("/guest", app.authenticate(guestMux)))
+
+	// Mount protected routes (authentication required)  
+	finalMux.Handle("/protected/", http.StripPrefix("/protected", app.authenticate(app.authorize(protectedMux))))
+
+	// Apply method validation to the entire final mux
+	return app.logAccess(app.recoverPanic(registry.ValidateMethod()(finalMux)))
 }

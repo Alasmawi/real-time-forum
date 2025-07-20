@@ -1,0 +1,83 @@
+/* User Profile Card */
+.user-profile-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-medium);
+    border: 1px solid var(--border-color);
+    padding: var(--gap-medium);
+    margin-bottom: var(--gap-medium);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gap-medium);
+}
+
+.user-profile-header {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-medium);
+    width: 100%;
+}
+
+.user-profile .avatar {
+    /* Avatar styling inherited from avatar.css */
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-status {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin: 2px 0 0 0;
+}
+
+.user-status.online {
+    color: var(--accent-primary);
+}
+
+.user-status.offline {
+    color: var(--text-secondary);
+}
+
+/* Profile logout button */
+.profile-logout-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: var(--radius-small);
+    padding: var(--gap-small) var(--gap-medium);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--gap-small);
+    margin-top: var(--gap-small);
+    width: 100%;
+    justify-content: center;
+    transition: background-color var(--transition-fast);
+}
+
+.profile-logout-btn:hover {
+    background-color: #c82333;
+}
+
+.logout-icon {
+    font-size: 1rem;
+}

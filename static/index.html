@@ -6,29 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <link rel="stylesheet" href="/css/styles.css">
+     <link rel="stylesheet" href="/css/layout-structure.css">
     <title>Real-time Forum</title>
 </head>
 
 <body>
-    <header>
-        <nav>
-            <ul>
-                <li><a href="/" class="nav-link" data-link>Login</a></li>
-                <li><a href="/register" class="nav-link" data-link>Register</a></li>
-                <li><a href="/chat" class="nav-link" data-link>Chat</a></li>
-                <li><a href="/posts" class="nav-link" data-link>Posts</a></li>
-                <li><a href="/newpost" class="nav-link" data-link>New Post</a></li>
-                <li><a href="/logout" class="nav-link" data-link>Logout</a></li>
-            </ul>
-        </nav>
-    </header>
+    <div class="app-layout">
+        <!-- Left Column -->
+        <div class="left-column">
+            <!-- User Profile Card (Top) -->
+            <div id="user-profile-card" class="user-profile-card" style="display: none;">
+                <!-- User profile content will be populated by app-init -->
+            </div>
 
-    <div id="content">
-        <!-- Content is loaded here dynamically -->
-    </div>
+            <!-- Navigation Card (Bottom) -->
+            <div id="nav-card" class="nav-card" style="display: none;">
+                <!-- Navigation content will be populated by posts.js -->
+            </div>
+        </div>
 
-    <div id="user-list">
-        <!-- Content is loaded here dynamically -->
+        <!-- Middle Column -->
+        <div class="middle-column">
+            <!-- Categories Card will be injected here by posts controller -->
+            
+            <!-- Main Content Card -->
+            <div id="content-card" class="content-card">
+                <div id="content">
+                    <!-- Content is loaded here dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- User List Card (Right) -->
+        <div id="user-list" class="user-list" style="display: none;">
+            <!-- User list content will be populated by posts.js -->
+        </div>
     </div>
 
     <noscript>
@@ -49,6 +61,8 @@
         </div>
     </noscript>
 
+    <script type="module" src="/js/modules/utils/UI-UX/theme-toggle.js"></script>
+    <script type="module" src="/js/modules/utils/UI-UX/avatar-generator.js"></script>
     <script type="module" src="/js/modules/router.js"></script>
 </body>
 
