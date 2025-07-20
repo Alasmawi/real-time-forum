@@ -141,16 +141,29 @@ export class NotificationsController {
 
     // Handle notification card click - open chat and clear notification
     static handleNotificationClick(userId) {
+        console.log('Notification clicked for user ID:', userId);
+        
         // Clear the notification
         this.model.clearNotification(userId);
         
         // Open private chat if controller exists
         if (window.privateChatController && window.userListController) {
             const user = window.userListController.model.getUserById(userId);
+            console.log('Found user for notification click:', user);
+            
             if (user) {
                 const userElement = document.querySelector(`[data-user-id="${userId}"]`);
+                console.log('Found user element:', userElement);
+                console.log('Opening chat for user:', user);
                 window.privateChatController.openChat(user, userElement);
+            } else {
+                console.error('User not found in cache for ID:', userId);
             }
+        } else {
+            console.error('Controllers not available:', {
+                privateChatController: !!window.privateChatController,
+                userListController: !!window.userListController
+            });
         }
         
         // Close modal

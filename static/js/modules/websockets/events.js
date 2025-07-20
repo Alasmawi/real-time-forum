@@ -114,17 +114,38 @@ function routeEvent (event) {
         });
       }
       
-      // Add notification if message is not for currently open chat
+      // Add notification if sender's chat is not currently open (receiver only gets notifications)
       if (window.privateChatController && window.NotificationsController) {
-        const isCurrentChat = window.privateChatController.isCurrentChat && 
-                              window.privateChatController.isCurrentChat(messageEvent.sender_id);
-        if (!isCurrentChat) {
+        // Skip notification if the sender is the current user (shouldn't notify yourself)
+        const isSenderCurrentUser = window.privateChatController.isCurrentUser && 
+                                   window.privateChatController.isCurrentUser(messageEvent.sender_id);
+        
+        const isSenderChatOpen = window.privateChatController.isCurrentChat && 
+                                 window.privateChatController.isCurrentChat(messageEvent.sender_id);
+        
+        console.log('Notification check:', {
+          sender_id: messageEvent.sender_id,
+          receiver_id: messageEvent.receiver_id,
+          isSenderCurrentUser: isSenderCurrentUser,
+          isSenderChatOpen: isSenderChatOpen,
+          hasIsCurrentChatMethod: !!window.privateChatController.isCurrentChat,
+          chatModalExists: !!document.getElementById(`chat-modal-${messageEvent.sender_id}`)
+        });
+        
+        if (!isSenderCurrentUser && !isSenderChatOpen) {
           // Get sender username from user list
           const senderUser = window.userListController ? 
                            window.userListController.model.getUserById(messageEvent.sender_id) : null;
           const senderUsername = senderUser ? senderUser.username : `User ${messageEvent.sender_id}`;
           
+          console.log('Adding notification for sender:', senderUsername, 'ID:', messageEvent.sender_id);
           window.NotificationsController.addNotification(messageEvent.sender_id, senderUsername, 1);
+        } else {
+          if (isSenderCurrentUser) {
+            console.log('Skipping notification - sender is current user');
+          } else {
+            console.log('Skipping notification - sender chat is currently open for user ID:', messageEvent.sender_id);
+          }
         }
       }
       break
@@ -174,9 +195,17 @@ function handleNewTyping(payload) {
   // Payload is already an object, no need to parse
   const typingEvent = payload
   
+  console.log('handleNewTyping called:', typingEvent);
+  
   // Route typing status to private chat controller if available
   if (window.privateChatController) {
+    console.log('Routing typing status to privateChatController:', {
+      sender_id: typingEvent.sender_id,
+      is_typing: typingEvent.is_typing
+    });
     window.privateChatController.handleTypingStatus(typingEvent.sender_id, typingEvent.is_typing);
+  } else {
+    console.warn('privateChatController not available for typing status');
   }
 }
 

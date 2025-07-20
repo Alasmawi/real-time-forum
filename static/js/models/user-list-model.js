@@ -56,7 +56,23 @@ export class UserListModel {
 
     // Get user by ID
     getUserById(userId) {
-        return this.users.find(user => user.id === userId);
+        // First check paginated users
+        const user = this.users.find(user => user.id === userId);
+        if (user) {
+            return user;
+        }
+        
+        // Fallback to status cache if user not in paginated list
+        const cachedUser = this.statusCache.get(userId);
+        if (cachedUser) {
+            return {
+                id: userId,
+                username: cachedUser.username,
+                status: cachedUser.status
+            };
+        }
+        
+        return null;
     }
     
     // Check if user exists in cache

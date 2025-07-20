@@ -105,8 +105,6 @@ export class PrivateChatController {
         // Load chat history with pagination
         this.loadChatHistory(user.id);
 
-        // Add resize handler to reposition modal
-        this.attachResizeHandler(modal, user.id, userElement);
 
         return modal;
     }
@@ -151,6 +149,7 @@ export class PrivateChatController {
             
             // Throttle: only send typing event once per second
             if (!isThrottled) {
+                console.log('Sending typing started for user:', user.id);
                 this.sendTypingStatus(user.id, true);
                 isThrottled = true;
                 
@@ -161,6 +160,7 @@ export class PrivateChatController {
             
             // Debounce: stop typing after 3 seconds of inactivity
             typingTimer = setTimeout(() => {
+                console.log('Sending typing stopped for user:', user.id);
                 this.sendTypingStatus(user.id, false);
             }, 3000);
         });
@@ -526,11 +526,18 @@ export class PrivateChatController {
 
     // Send typing status
     async sendTypingStatus(userId, isTyping) {
+        console.log('sendTypingStatus called:', { userId, isTyping });
+        
         // Update local state
         this.model.setTypingStatus(userId, isTyping);
         
         // Send to server
-        await this.model.sendTypingStatus(userId, isTyping);
+        try {
+            const result = await this.model.sendTypingStatus(userId, isTyping);
+            console.log('Typing status sent:', { userId, isTyping, result });
+        } catch (error) {
+            console.error('Error sending typing status:', error);
+        }
     }
 
     // Handle incoming message from WebSocket
@@ -567,18 +574,24 @@ export class PrivateChatController {
 
     // Handle typing status from WebSocket
     handleTypingStatus(senderId, isTyping) {
+        console.log('handleTypingStatus called:', { senderId, isTyping });
+        
         // Update typing indicator in chat modal if open
         const messagesContainer = document.getElementById(`chat-messages-${senderId}`);
+        console.log('Looking for chat messages container:', `chat-messages-${senderId}`, 'found:', !!messagesContainer);
+        
         if (messagesContainer) {
             // Get user data for username
             const chat = this.model.getChat(senderId);
             const username = chat ? chat.user.username : `User ${senderId}`;
             
+            console.log('Updating typing indicator in chat modal for:', username, 'isTyping:', isTyping);
             PrivateChatView.updateTypingIndicator(messagesContainer, username, isTyping);
         }
 
         // Update typing indicator on user list card
         if (window.userListController) {
+            console.log('Updating typing indicator in user list for user:', senderId, 'isTyping:', isTyping);
             if (isTyping) {
                 window.userListController.showTypingIndicator(senderId);
             } else {
