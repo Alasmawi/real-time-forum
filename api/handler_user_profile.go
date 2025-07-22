@@ -45,14 +45,14 @@ func (app *Application) fetchUserProfile(w http.ResponseWriter, r *http.Request)
 func (app *Application) fetchUserMessagePriority(w http.ResponseWriter, r *http.Request) {
 	// Get current user from context
 	currentUser := contextGetAuthenticatedUser(r)
-	
+
 	// Get target user ID from URL path parameter
 	userIDStr := r.PathValue("id")
 	if userIDStr == "" {
 		app.badRequest(w, r, fmt.Errorf("user ID is required"))
 		return
 	}
-	
+
 	targetUserID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		app.badRequest(w, r, fmt.Errorf("invalid user ID: %s", userIDStr))

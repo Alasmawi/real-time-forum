@@ -131,4 +131,3 @@ func (m *WebsocketManager) removeClient(client *Client) {
 		delete(m.clients, client)
 	}
 }
-

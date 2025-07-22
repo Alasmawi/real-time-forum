@@ -156,7 +156,7 @@ func (m *WebsocketManager) sendInitialStatusUpdate(client *Client) {
 
 	// Log initial status update info
 	log.Printf("sendInitialStatusUpdate for client %d: found %d online users", client.userID, len(onlineUsers))
-	
+
 	// Only send if there are online users
 	if len(onlineUsers) == 0 {
 		log.Printf("No online users to send to client %d, skipping initial status update", client.userID)

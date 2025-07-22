@@ -134,7 +134,7 @@ func (c *Client) sendErrorEventWithContext(code, message string, context map[str
 		"code":    code,
 		"message": message,
 	}
-	
+
 	// Add context fields
 	for key, value := range context {
 		errorEvent[key] = value

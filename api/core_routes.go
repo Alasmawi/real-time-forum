@@ -15,7 +15,7 @@ func (app *Application) routes() http.Handler {
 		GetMethod("/v1/status", app.status).
 		GetMethod("/v1/404", app.notFound).
 		PostMethod("/v1/login", app.createAuthenticationToken).
-		PostMethod("/v1/register", app.createUser) 
+		PostMethod("/v1/register", app.createUser)
 
 	// Guest routes (optional authentication - guests allowed, user context if authenticated)
 	registry.GetMethod("/guest/v1/posts", app.fetchPosts).
@@ -46,7 +46,7 @@ func (app *Application) routes() http.Handler {
 	// Mount guest routes (optional authentication - guests allowed)
 	finalMux.Handle("/guest/", http.StripPrefix("/guest", app.authenticate(guestMux)))
 
-	// Mount protected routes (authentication required)  
+	// Mount protected routes (authentication required)
 	finalMux.Handle("/protected/", http.StripPrefix("/protected", app.authenticate(app.authorize(protectedMux))))
 
 	// Apply method validation to the entire final mux

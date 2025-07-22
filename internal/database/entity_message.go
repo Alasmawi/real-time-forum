@@ -33,7 +33,6 @@ func (db *DB) InsertMessage(senderid, receiverid int, message string, currentDat
 	return int(id), err
 }
 
-
 // GetPaginatedMessageHistory returns message history with pagination
 func (db *DB) GetPaginatedMessageHistory(senderid, receiverid, offset, limit int) ([]Message, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)

@@ -35,7 +35,7 @@ func (m *WebsocketManager) broadcastUserList() {
 
 	// Detect changes in online users
 	statusUpdate := m.detectUserStatusChanges()
-	
+
 	// Only broadcast if there are changes
 	if len(statusUpdate.OnlineUsers) == 0 && len(statusUpdate.OfflineUserIDs) == 0 {
 		return

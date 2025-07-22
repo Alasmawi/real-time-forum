@@ -97,16 +97,16 @@ func (app *Application) fetchUserList(w http.ResponseWriter, r *http.Request) {
 	offlineCount := totalCount
 	if app.WSManager != nil {
 		onlineUserIDs := app.WSManager.GetOnlineUserIDs()
-		
+
 		// Exclude current user from online count
 		for _, userID := range onlineUserIDs {
 			if userID != user.ID {
 				onlineCount++
 			}
 		}
-		
+
 		offlineCount = totalCount - onlineCount
-		
+
 		// Ensure counts are not negative
 		if onlineCount < 0 {
 			onlineCount = 0

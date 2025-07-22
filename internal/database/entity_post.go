@@ -34,7 +34,6 @@ func (db *DB) GetPostByID(postID int) (*Post, error) {
 	return &post, nil
 }
 
-
 // GetPostsPaginated returns posts with pagination
 func (db *DB) GetPaginatedPosts(offset, limit int) ([]Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)

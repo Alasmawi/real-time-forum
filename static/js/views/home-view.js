@@ -1,13 +1,13 @@
-import AbstractView from "../abstract-view.js";
-import { PostsController } from "../../controllers/posts-controller.js";
-import { CategoryController } from "../../controllers/category-controller.js";
-import { NewPostCardView } from "./new-post-card.js";
-import { UserModel } from "../../models/user-model.js";
+import AbstractView from "./abstract-view.js";
+import { PostsController } from "../controllers/posts-controller.js";
+import { CategoryController } from "../controllers/category-controller.js";
+import { NewPostCardView } from "./posts/new-post-card.js";
+import { UserModel } from "../models/user-model.js";
 
 export default class PostsView extends AbstractView {
     constructor() {
         super();
-        this.setTitle("Posts");
+        this.setTitle("Home");
     }
 
     async getHtml() {

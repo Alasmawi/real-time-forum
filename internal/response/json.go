@@ -34,7 +34,7 @@ func EncodeJSON(data any) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	js = append(js, '\n')
 	return js, nil
 }

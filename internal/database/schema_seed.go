@@ -1494,8 +1494,6 @@ func (db DB) SeedData() error {
 		`INSERT INTO comment (content, created_at, post_id, user_id) VALUES ('That book is on my reading list! Your review just moved it to the top.', '2024-01-19 21:00:00', 10, 8)`,
 		`INSERT INTO comment (content, created_at, post_id, user_id) VALUES ('The authors world-building skills are legendary. Everything feels so real.', '2024-01-19 21:30:00', 10, 9)`,
 		`INSERT INTO comment (content, created_at, post_id, user_id) VALUES ('I finished the whole series in a week! Couldnt put them down.', '2024-01-19 22:00:00', 10, 10)`,
-		
-		
 	}
 
 	allInserts := [][]string{

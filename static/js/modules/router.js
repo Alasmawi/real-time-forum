@@ -1,7 +1,7 @@
 // import ChatroomView from "../views/chatroom.js";
 import LoginView from "../views/login-register/login.js";
 import RegisterView from "../views/login-register/register.js";
-import PostsView from "../views/posts/posts-list.js";
+import PostsView from "../views/home-view.js";
 // import NewPostView from "../views/new-post.js"; // Removed - inline post creation now
 import ErrorView from "../views/error.js";
 import ErrorHandler from "./utils/errors/error-handler.js";
