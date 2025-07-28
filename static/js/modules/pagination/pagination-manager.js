@@ -14,7 +14,7 @@ class PaginationManager {
         this.pageSizes = {
             posts: 20,      
             users: 50,    
-            messages: 30,   
+            messages: 25,   // Changed from 30 to 25 to match private chat expectation
             comments: 25,  
             categories: 100 
         };
@@ -33,7 +33,18 @@ class PaginationManager {
 
     // Get page size for a specific type
     getPageSize(type) {
-        return this.pageSizes[type] || this.config.defaultPageSize;
+        // Check if exact type exists first
+        if (this.pageSizes[type]) {
+            return this.pageSizes[type];
+        }
+        
+        // For specific message types like 'messages-123', check base 'messages' type
+        if (type.startsWith('messages-')) {
+            return this.pageSizes['messages'] || this.config.defaultPageSize;
+        }
+        
+        // For other types, use default
+        return this.config.defaultPageSize;
     }
 
     // Initialize pagination for a specific type
@@ -63,12 +74,16 @@ class PaginationManager {
             { useThrottle: true, useDebounce: false } : 
             {}; // Default options for other types
             
-        this.scrollManager.setupInfiniteScroll(type, containerId, async () => {
-            const newItems = await this.loadMoreData(type);
-            if (newItems && ((Array.isArray(newItems) && newItems.length > 0) || (newItems.items && newItems.items.length > 0))) {
-                renderCallback(newItems, false); // false = append
-            }
-        }, scrollOptions);
+        // Skip setting up normal scroll for message types (they use reverse scroll)
+        const isMessageType = type.startsWith('messages-');
+        if (!isMessageType) {
+            this.scrollManager.setupInfiniteScroll(type, containerId, async () => {
+                const newItems = await this.loadMoreData(type);
+                if (newItems && ((Array.isArray(newItems) && newItems.length > 0) || (newItems.items && newItems.items.length > 0))) {
+                    renderCallback(newItems, false); // false = append
+                }
+            }, scrollOptions);
+        }
     }
 
     // Load initial page of data
@@ -83,14 +98,14 @@ class PaginationManager {
             const pageSize = this.getPageSize(type);
             
             // Route to appropriate fetcher method based on type
-            switch (type) {
-                case 'posts':
+            switch (true) {
+                case type === 'posts':
                     response = await this.apiFetcher.fetchPosts(0, cache.params.category);
                     break;
-                case 'users':
+                case type === 'users':
                     response = await this.apiFetcher.fetchUsers(0);
                     break;
-                case 'messages':
+                case type.startsWith('messages'):
                     response = await this.apiFetcher.fetchMessages(0, cache.params.user_id);
                     break;
                 default:
@@ -104,7 +119,14 @@ class PaginationManager {
             cache.items = items;
             cache.currentPage = 1;
             cache.totalCount = totalCount;
-            cache.hasMore = items.length === pageSize;
+            cache.hasMore = items.length < totalCount; // Has more if loaded items < total available
+            
+            console.log(`Initial load for ${type}:`, {
+                itemsLoaded: items.length,
+                totalCount: totalCount,
+                hasMore: cache.hasMore,
+                pageSize: pageSize
+            });
             
             this.cacheManager.saveToLocalStorage(type, cache);
             
@@ -121,7 +143,20 @@ class PaginationManager {
     // Load more data (next page)
     async loadMoreData(type) {
         const cache = this.cacheManager.getCache(type);
+        console.log(`loadMoreData called for type: ${type}`, { 
+            cacheExists: !!cache, 
+            isLoading: this.isLoading(type), 
+            hasMore: cache?.hasMore,
+            currentPage: cache?.currentPage,
+            itemsCount: cache?.items?.length 
+        });
+        
         if (!cache || this.isLoading(type) || !cache.hasMore) {
+            console.log(`Returning empty array for ${type}:`, {
+                noCache: !cache,
+                isLoading: this.isLoading(type),
+                noMore: !cache?.hasMore
+            });
             return [];
         }
 
@@ -132,14 +167,14 @@ class PaginationManager {
             const pageSize = this.getPageSize(type);
             
             // Route to appropriate fetcher method based on type
-            switch (type) {
-                case 'posts':
+            switch (true) {
+                case type === 'posts':
                     response = await this.apiFetcher.fetchPosts(cache.currentPage, cache.params.category);
                     break;
-                case 'users':
+                case type === 'users':
                     response = await this.apiFetcher.fetchUsers(cache.currentPage);
                     break;
-                case 'messages':
+                case type.startsWith('messages'):
                     response = await this.apiFetcher.fetchMessages(cache.currentPage, cache.params.user_id);
                     break;
                 default:
@@ -152,8 +187,17 @@ class PaginationManager {
             // Update cache
             this.cacheManager.updateCache(type, newItems, totalCount);
             
-            // Update hasMore based on this type's page size
-            cache.hasMore = newItems.length === pageSize;
+            // Update hasMore based on total items loaded vs total available
+            const totalLoadedAfterUpdate = cache.items.length;
+            cache.hasMore = totalLoadedAfterUpdate < totalCount;
+            
+            console.log(`Loaded more for ${type}:`, {
+                newItemsCount: newItems.length,
+                totalLoadedNow: totalLoadedAfterUpdate,
+                totalAvailable: totalCount,
+                hasMore: cache.hasMore,
+                currentPage: cache.currentPage
+            });
             
             // Trim cache if too large
             if (cache.items.length > this.config.maxCacheSize) {

@@ -343,7 +343,7 @@ export class PrivateChatController {
             // Set page size for messages
             this.paginationManager.setPageSize('messages', 30);
 
-            // Initialize pagination with render callback
+            // Initialize pagination with render callback  
             await this.paginationManager.initializePagination(
                 `messages-${userId}`, // Unique type per chat
                 `/protected/v1/message-history`,
@@ -354,8 +354,8 @@ export class PrivateChatController {
                 { user_id: userId }
             );
 
-            // Setup reverse scroll for loading older messages
-            this.setupReverseScroll(userId);
+            // Setup reverse scroll for loading older messages (replaces normal scroll)
+            this.setupReverseScrollOnly(userId);
 
         } catch (error) {
             console.error('Error loading chat history:', error);
@@ -367,20 +367,24 @@ export class PrivateChatController {
         }
     }
 
-    // Setup reverse scroll for loading older messages
-    setupReverseScroll(userId) {
-        // Use ScrollManager with reverse scrolling (isReverse: true)
+    // Setup reverse scroll for loading older messages (replaces normal pagination scroll)
+    setupReverseScrollOnly(userId) {
+        // Remove any existing scroll listeners for this chat first
+        this.paginationManager.scrollManager.removeScrollListener(`messages-${userId}`);
+        
+        // Set up ONLY reverse scroll with consistent throttle settings
         this.paginationManager.scrollManager.setupInfiniteScroll(
             `messages-reverse-${userId}`,
             `chat-messages-${userId}`,
             async () => {
+                console.log(`Reverse scroll triggered for user ${userId}`);
                 await this.loadOlderMessages(userId);
             },
             {
                 isReverse: true, // Boolean parameter for reverse scrolling
                 useThrottle: true,
                 useDebounce: false,
-                throttleDelay: 200
+                throttleDelay: 300 // Use same throttle as other views
             }
         );
     }
@@ -390,13 +394,28 @@ export class PrivateChatController {
         const messagesContainer = document.getElementById(`chat-messages-${userId}`);
         if (!messagesContainer) return;
 
+        // Debug cache state before loading
+        const cacheType = `messages-${userId}`;
+        const stats = this.paginationManager.getStats(cacheType);
+        console.log(`Cache stats for ${cacheType}:`, stats);
+
         // Show loading indicator
         this.showTopLoadingIndicator(userId);
 
         try {
             // Load more messages using pagination manager
             const moreMessages = await this.paginationManager.loadMoreData(`messages-${userId}`);
-            // The renderMessagesFromPagination will handle the UI updates
+            
+            // Check if we got new messages and render them
+            if (moreMessages && Array.isArray(moreMessages) && moreMessages.length > 0) {
+                console.log(`Loaded ${moreMessages.length} older messages for user ${userId}`);
+                this.renderMessagesFromPagination(userId, moreMessages, false);
+            } else {
+                console.log(`No more older messages available for user ${userId}`);
+                // Debug why no messages were returned
+                const statsAfter = this.paginationManager.getStats(cacheType);
+                console.log(`Cache stats after attempt:`, statsAfter);
+            }
         } catch (error) {
             console.error('Error loading older messages:', error);
         } finally {

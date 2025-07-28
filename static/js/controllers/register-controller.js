@@ -1,5 +1,4 @@
 // Register Controller - Handles registration form logic
-import { FormErrorHelpers } from "../modules/utils/errors/form-error-helpers.js";
 import { UserModel } from "../models/user-model.js";
 import { FormHandler } from "../modules/utils/form-handler.js";
 

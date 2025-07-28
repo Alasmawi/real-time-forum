@@ -3,10 +3,10 @@ class ScrollManager {
     constructor() {
         this.scrollListeners = new Map();
         this.config = {
-            loadTriggerPercent: 95,
+            loadTriggerPercent: 95,        // Load more when 95% down
+            reverseLoadTriggerPercent: 5,  // Load older when within 5% of top
             throttleDelay: 300,
             debounceDelay: 500,
-            reverseLoadThreshold: 10, // pixels from top to trigger reverse loading
         };
     }
 
@@ -94,8 +94,14 @@ class ScrollManager {
     // Check if should load reverse content based on scroll position (top)
     shouldLoadReverse(container) {
         const scrollTop = container.scrollTop;
-        const threshold = this.config.reverseLoadThreshold || 10; // pixels from top
-        return scrollTop <= threshold;
+        const scrollHeight = container.scrollHeight;
+        const clientHeight = container.clientHeight;
+        
+        // Calculate how far from top as percentage (0% = at top, 100% = at bottom)
+        const scrollPercent = (scrollTop) / (scrollHeight - clientHeight) * 100;
+        
+        // Load when within the reverse trigger percentage from top
+        return scrollPercent <= this.config.reverseLoadTriggerPercent;
     }
 
     // Remove scroll listener for cleanup
